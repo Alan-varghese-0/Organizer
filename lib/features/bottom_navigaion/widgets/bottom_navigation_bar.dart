@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:organizer/app/theme/app_color.dart';
 
 class AppBottomNavigationBar extends StatelessWidget {
@@ -13,7 +13,6 @@ class AppBottomNavigationBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Use four navigation items; the central Create action is provided by the FAB on the right.
     const items = [
       (title: 'Home', icon: Icons.home_rounded),
       (title: 'Browse', icon: Icons.explore_rounded),
@@ -29,12 +28,12 @@ class AppBottomNavigationBar extends StatelessWidget {
           height: 88,
           padding: const EdgeInsets.symmetric(horizontal: 10),
           decoration: BoxDecoration(
-            color: AppColor.surface.withOpacity(0.94),
+            color: AppColor.surface.withValues(alpha: 0.94),
             borderRadius: BorderRadius.circular(28),
             border: Border.all(color: AppColor.border),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.22),
+                color: Colors.black.withValues(alpha: 0.22),
                 blurRadius: 30,
                 offset: const Offset(0, 18),
               ),
@@ -55,7 +54,7 @@ class AppBottomNavigationBar extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(vertical: 10),
                     decoration: selected
                         ? BoxDecoration(
-                            color: AppColor.primary.withOpacity(0.12),
+                            color: AppColor.primary.withValues(alpha: 0.12),
                             borderRadius: BorderRadius.circular(18),
                           )
                         : null,

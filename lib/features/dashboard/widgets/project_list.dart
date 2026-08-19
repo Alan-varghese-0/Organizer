@@ -1,4 +1,5 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
+import 'package:organizer/core/models/mock_data.dart';
 import 'empty_project_state.dart';
 import 'project_card.dart';
 
@@ -7,26 +8,20 @@ class ProjectList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final projects = [
-      (title: "Organizer", items: 24, updated: "2h ago"),
-      (title: "Portfolio", items: 12, updated: "Yesterday"),
-      (title: "Flutter UI", items: 43, updated: "3 days ago"),
-    ];
+    final projects = MockData.sampleProjects;
 
     if (projects.isEmpty) {
       return EmptyProjectState(onCreateProject: () {});
     }
 
     return ListView.builder(
-      padding: const EdgeInsets.only(top: 10),
+      padding: const EdgeInsets.only(top: 6, bottom: 20),
       itemCount: projects.length,
       itemBuilder: (_, index) {
         final project = projects[index];
 
         return ProjectCard(
-          title: project.title,
-          items: project.items,
-          updated: project.updated,
+          project: project,
         );
       },
     );
