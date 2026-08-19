@@ -4,15 +4,24 @@ import 'package:organizer/app/theme/app_color.dart';
 
 class AppTheme {
   AppTheme._();
+
   static ThemeData lightTheme = ThemeData(
     useMaterial3: true,
-    brightness: Brightness.light,
+    brightness: Brightness.dark,
     scaffoldBackgroundColor: AppColor.background,
     colorScheme: ColorScheme.fromSeed(
       seedColor: AppColor.primary,
-      brightness: Brightness.light,
+      brightness: Brightness.dark,
+      background: AppColor.background,
+      surface: AppColor.surface,
     ),
-    textTheme: GoogleFonts.interTextTheme(),
+    textTheme: GoogleFonts.interTextTheme(ThemeData.dark().textTheme).copyWith(
+      bodyLarge: const TextStyle(color: AppColor.textPrimary),
+      bodyMedium: const TextStyle(color: AppColor.textPrimary),
+      titleLarge: const TextStyle(color: AppColor.textPrimary),
+      titleMedium: const TextStyle(color: AppColor.textPrimary),
+      labelLarge: const TextStyle(color: AppColor.textPrimary),
+    ),
     appBarTheme: const AppBarTheme(
       backgroundColor: Colors.transparent,
       elevation: 0,
@@ -21,14 +30,44 @@ class AppTheme {
     ),
     cardTheme: CardThemeData(
       color: AppColor.surface,
+      elevation: 0,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+    ),
+    inputDecorationTheme: InputDecorationTheme(
+      filled: true,
+      fillColor: AppColor.surface,
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16),
+        borderSide: BorderSide.none,
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16),
+        borderSide: BorderSide.none,
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16),
+        borderSide: const BorderSide(color: AppColor.primary, width: 1.2),
+      ),
+      hintStyle: const TextStyle(color: AppColor.textMuted),
+      labelStyle: const TextStyle(color: AppColor.textSecondary),
+    ),
+    elevatedButtonTheme: ElevatedButtonThemeData(
+      style: ElevatedButton.styleFrom(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        elevation: 0,
+        backgroundColor: AppColor.primary,
+        foregroundColor: Colors.white,
+      ),
+    ),
+    bottomSheetTheme: const BottomSheetThemeData(
+      backgroundColor: AppColor.surface,
+      modalBackgroundColor: AppColor.surface,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.all(Radius.circular(20)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
       ),
     ),
   );
-  static ThemeData darkTheme = ThemeData(
-    useMaterial3: true,
-    brightness: Brightness.dark,
-    textTheme: GoogleFonts.interTextTheme(ThemeData.dark().textTheme),
-  );
+
+  static ThemeData darkTheme = lightTheme;
 }

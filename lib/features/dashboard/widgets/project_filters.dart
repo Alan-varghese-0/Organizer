@@ -28,9 +28,7 @@ class ProjectFilter extends StatelessWidget {
               selected: active,
               onSelected: (_) => onChanged(index),
               selectedColor: AppColor.primary,
-              labelStyle: TextStyle(
-                color: active ? Colors.white : Colors.black87,
-              ),
+              labelStyle: TextStyle(color: Colors.white),
             ),
           );
         }),
