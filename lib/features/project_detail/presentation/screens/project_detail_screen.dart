@@ -1,6 +1,7 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:organizer/app/theme/app_color.dart';
+import 'package:organizer/core/database/database_service.dart';
 import 'package:organizer/core/models/project.dart';
 import 'package:organizer/core/models/resource.dart';
 
@@ -199,15 +200,45 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                   isFav ? Icons.star_rounded : Icons.star_border_rounded,
                   color: isFav ? Colors.amber : Colors.white70,
                 ),
-                onPressed: () {
+                onPressed: () async {
+                  final newFavoriteValue = !isFav;
                   setState(() {
-                    isFav = !isFav;
+                    isFav = newFavoriteValue;
                   });
+                  await DatabaseService.instance.saveProject(
+                    ProjectItem(
+                      id: widget.project.id,
+                      title: widget.project.title,
+                      description: widget.project.description,
+                      category: widget.project.category,
+                      itemsCount: widget.project.itemsCount,
+                      updated: widget.project.updated,
+                      color: widget.project.color,
+                      isFavorite: newFavoriteValue,
+                      resources: widget.project.resources,
+                    ),
+                  );
                 },
               ),
               IconButton(
                 icon: const Icon(Icons.more_vert_rounded, color: Colors.white),
-                onPressed: () {},
+                onPressed: () async {
+                  final shouldDelete = await showDialog<bool>(
+                    context: context,
+                    builder: (dialogContext) => AlertDialog(
+                      title: const Text('Delete project?'),
+                      content: const Text('This project and its saved resources will be removed.'),
+                      actions: [
+                        TextButton(onPressed: () => Navigator.pop(dialogContext, false), child: const Text('Cancel')),
+                        FilledButton(onPressed: () => Navigator.pop(dialogContext, true), child: const Text('Delete')),
+                      ],
+                    ),
+                  );
+                  if (shouldDelete != true) return;
+                  await DatabaseService.instance.deleteProject(widget.project.id);
+                  if (!mounted) return;
+                  Navigator.pop(context);
+                },
               ),
             ],
             flexibleSpace: FlexibleSpaceBar(

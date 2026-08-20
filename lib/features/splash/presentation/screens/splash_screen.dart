@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:organizer/app/theme/app_color.dart';
 import 'package:organizer/app/theme/app_text_style.dart';
+import 'package:organizer/core/database/database_service.dart';
+import 'package:organizer/features/bottom_navigaion/presentation/screens/main_navigation_screen.dart';
 import 'package:organizer/features/onboarding/presentation/screens/onboarding_screen.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -29,9 +31,12 @@ class _SplashScreenState extends State<SplashScreen>
     _controller.forward();
     Timer(const Duration(seconds: 2), () {
       if (!mounted) return;
+      final destination = DatabaseService.instance.hasCompletedOnboarding
+          ? const MainNavigationScreen()
+          : const OnboardingScreen();
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => const OnboardingScreen()),
+        MaterialPageRoute(builder: (context) => destination),
       );
     });
   }

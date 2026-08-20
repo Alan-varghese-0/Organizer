@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:organizer/core/database/database_service.dart';
 import 'package:organizer/app/theme/app_color.dart';
 import 'package:organizer/app/theme/app_text_style.dart';
 import 'package:organizer/features/bottom_navigaion/presentation/screens/main_navigation_screen.dart';
@@ -255,9 +256,10 @@ class _WorkspaceSetupScreenState extends State<WorkspaceSetupScreen> {
                       borderRadius: BorderRadius.circular(18),
                     ),
                   ),
-                  onPressed: () {
-                    // TODO:
-                    // Save to SharedPreferences
+                  onPressed: () async {
+                    await DatabaseService.instance.completeOnboarding();
+
+                    if (!mounted) return;
 
                     Navigator.pushReplacement(
                       context,

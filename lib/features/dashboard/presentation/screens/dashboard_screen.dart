@@ -48,7 +48,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
             const SizedBox(height: 20),
 
-            const Expanded(child: ProjectList()),
+            Expanded(child: ProjectList(filter: selectedFilter)),
           ],
         ),
       ),

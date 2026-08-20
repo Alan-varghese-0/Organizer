@@ -1,7 +1,7 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:organizer/app/theme/app_color.dart';
-import 'package:organizer/core/models/mock_data.dart';
+import 'package:organizer/core/database/database_service.dart';
 import 'package:organizer/core/models/resource.dart';
 
 class LibraryScreen extends StatefulWidget {
@@ -21,7 +21,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
   final categories = const ['All', 'Notes', 'Links', 'Media', 'Design Specs'];
 
   List<ResourceItem> get filteredResources {
-    var list = MockData.sampleResources;
+    var list = DatabaseService.instance.getResources();
     if (showFavoritesOnly) {
       list = list.where((r) => r.isFavorite).toList();
     }
@@ -185,176 +185,181 @@ class _LibraryScreenState extends State<LibraryScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final resources = filteredResources;
+    return ValueListenableBuilder(
+      valueListenable: DatabaseService.instance.resourcesListenable,
+      builder: (context, box, _) {
+        final resources = filteredResources;
 
-    return Scaffold(
-      backgroundColor: AppColor.background,
-      body: SafeArea(
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+        return Scaffold(
+          backgroundColor: AppColor.background,
+          body: SafeArea(
+            child: Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        'Library',
-                        style: TextStyle(
-                          fontSize: 26,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                      SizedBox(height: 4),
-                      Text(
-                        'All saved assets, notes, and links',
-                        style: TextStyle(fontSize: 13, color: AppColor.textMuted),
-                      ),
-                    ],
-                  ),
-                  Row(
-                    children: [
-                      IconButton(
-                        icon: Icon(
-                          showFavoritesOnly ? Icons.star_rounded : Icons.star_outline_rounded,
-                          color: showFavoritesOnly ? Colors.amber : Colors.white70,
-                        ),
-                        onPressed: () {
-                          setState(() {
-                            showFavoritesOnly = !showFavoritesOnly;
-                          });
-                        },
-                      ),
-                      IconButton(
-                        icon: Icon(
-                          isGridView ? Icons.view_list_rounded : Icons.grid_view_rounded,
-                          color: Colors.white70,
-                        ),
-                        onPressed: () {
-                          setState(() {
-                            isGridView = !isGridView;
-                          });
-                        },
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-              child: TextField(
-                controller: _searchController,
-                onChanged: (val) {
-                  setState(() {
-                    searchQuery = val;
-                  });
-                },
-                style: const TextStyle(color: Colors.white, fontSize: 14),
-                decoration: InputDecoration(
-                  hintText: 'Search library resources...',
-                  prefixIcon: const Icon(Icons.search_rounded, color: AppColor.textMuted),
-                  suffixIcon: searchQuery.isNotEmpty
-                      ? IconButton(
-                          icon: const Icon(Icons.clear_rounded, color: AppColor.textMuted),
-                          onPressed: () {
-                            _searchController.clear();
-                            setState(() {
-                              searchQuery = '';
-                            });
-                          },
-                        )
-                      : null,
-                  filled: true,
-                  fillColor: AppColor.surface,
-                  contentPadding: const EdgeInsets.symmetric(vertical: 14),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(16),
-                    borderSide: BorderSide.none,
-                  ),
-                ),
-              ),
-            ),
-
-            SizedBox(
-              height: 48,
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                itemCount: categories.length,
-                itemBuilder: (context, index) {
-                  final selected = selectedCategoryIndex == index;
-                  return Padding(
-                    padding: const EdgeInsets.only(right: 8),
-                    child: ChoiceChip(
-                      label: Text(categories[index]),
-                      selected: selected,
-                      selectedColor: AppColor.primary,
-                      backgroundColor: AppColor.surface,
-                      labelStyle: TextStyle(
-                        color: selected ? Colors.white : AppColor.textMuted,
-                        fontWeight: selected ? FontWeight.bold : FontWeight.normal,
-                      ),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                      onSelected: (_) {
-                        setState(() {
-                          selectedCategoryIndex = index;
-                        });
-                      },
-                    ),
-                  );
-                },
-              ),
-            ),
-
-            const SizedBox(height: 12),
-
-            Expanded(
-              child: resources.isEmpty
-                  ? Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
+                      const Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Icon(Icons.search_off_rounded, size: 64, color: AppColor.textMuted.withValues(alpha: 0.5)),
-                          const SizedBox(height: 12),
-                          const Text(
-                            'No library resources found',
-                            style: TextStyle(color: AppColor.textMuted, fontSize: 15),
+                          Text(
+                            'Library',
+                            style: TextStyle(
+                              fontSize: 26,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                          SizedBox(height: 4),
+                          Text(
+                            'Offline saved assets, notes, and links',
+                            style: TextStyle(fontSize: 13, color: AppColor.textMuted),
                           ),
                         ],
                       ),
-                    )
-                  : isGridView
-                      ? GridView.builder(
-                          padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
-                          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 2,
-                            crossAxisSpacing: 14,
-                            mainAxisSpacing: 14,
-                            childAspectRatio: 0.85,
+                      Row(
+                        children: [
+                          IconButton(
+                            icon: Icon(
+                              showFavoritesOnly ? Icons.star_rounded : Icons.star_outline_rounded,
+                              color: showFavoritesOnly ? Colors.amber : Colors.white70,
+                            ),
+                            onPressed: () {
+                              setState(() {
+                                showFavoritesOnly = !showFavoritesOnly;
+                              });
+                            },
                           ),
-                          itemCount: resources.length,
-                          itemBuilder: (context, index) {
-                            final item = resources[index];
-                            return _buildGridCard(item);
-                          },
-                        )
-                      : ListView.builder(
-                          padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
-                          itemCount: resources.length,
-                          itemBuilder: (context, index) {
-                            final item = resources[index];
-                            return _buildListCard(item);
+                          IconButton(
+                            icon: Icon(
+                              isGridView ? Icons.view_list_rounded : Icons.grid_view_rounded,
+                              color: Colors.white70,
+                            ),
+                            onPressed: () {
+                              setState(() {
+                                isGridView = !isGridView;
+                              });
+                            },
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                  child: TextField(
+                    controller: _searchController,
+                    onChanged: (val) {
+                      setState(() {
+                        searchQuery = val;
+                      });
+                    },
+                    style: const TextStyle(color: Colors.white, fontSize: 14),
+                    decoration: InputDecoration(
+                      hintText: 'Search offline library...',
+                      prefixIcon: const Icon(Icons.search_rounded, color: AppColor.textMuted),
+                      suffixIcon: searchQuery.isNotEmpty
+                          ? IconButton(
+                              icon: const Icon(Icons.clear_rounded, color: AppColor.textMuted),
+                              onPressed: () {
+                                _searchController.clear();
+                                setState(() {
+                                  searchQuery = '';
+                                });
+                              },
+                            )
+                          : null,
+                      filled: true,
+                      fillColor: AppColor.surface,
+                      contentPadding: const EdgeInsets.symmetric(vertical: 14),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        borderSide: BorderSide.none,
+                      ),
+                    ),
+                  ),
+                ),
+
+                SizedBox(
+                  height: 48,
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    itemCount: categories.length,
+                    itemBuilder: (context, index) {
+                      final selected = selectedCategoryIndex == index;
+                      return Padding(
+                        padding: const EdgeInsets.only(right: 8),
+                        child: ChoiceChip(
+                          label: Text(categories[index]),
+                          selected: selected,
+                          selectedColor: AppColor.primary,
+                          backgroundColor: AppColor.surface,
+                          labelStyle: TextStyle(
+                            color: selected ? Colors.white : AppColor.textMuted,
+                            fontWeight: selected ? FontWeight.bold : FontWeight.normal,
+                          ),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                          onSelected: (_) {
+                            setState(() {
+                              selectedCategoryIndex = index;
+                            });
                           },
                         ),
+                      );
+                    },
+                  ),
+                ),
+
+                const SizedBox(height: 12),
+
+                Expanded(
+                  child: resources.isEmpty
+                      ? Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.search_off_rounded, size: 64, color: AppColor.textMuted.withValues(alpha: 0.5)),
+                              const SizedBox(height: 12),
+                              const Text(
+                                'No library resources found',
+                                style: TextStyle(color: AppColor.textMuted, fontSize: 15),
+                              ),
+                            ],
+                          ),
+                        )
+                      : isGridView
+                          ? GridView.builder(
+                              padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
+                              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: 2,
+                                crossAxisSpacing: 14,
+                                mainAxisSpacing: 14,
+                                childAspectRatio: 0.85,
+                              ),
+                              itemCount: resources.length,
+                              itemBuilder: (context, index) {
+                                final item = resources[index];
+                                return _buildGridCard(item);
+                              },
+                            )
+                          : ListView.builder(
+                              padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
+                              itemCount: resources.length,
+                              itemBuilder: (context, index) {
+                                final item = resources[index];
+                                return _buildListCard(item);
+                              },
+                            ),
+                ),
+              ],
             ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 
