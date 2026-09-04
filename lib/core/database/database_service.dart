@@ -92,6 +92,21 @@ class DatabaseService {
       'colorValue': p.color.toARGB32(),
       'isFavorite': p.isFavorite,
       'resources': p.resources.map((r) => _resourceToMap(r)).toList(),
+      'bannerPath': p.bannerPath,
+      'todos': p.todos
+          .map((t) => {
+                'id': t.id,
+                'title': t.title,
+                'isCompleted': t.isCompleted,
+                'subTodos': t.subTodos
+                    .map((s) => {
+                          'id': s.id,
+                          'title': s.title,
+                          'isCompleted': s.isCompleted,
+                        })
+                    .toList(),
+              })
+          .toList(),
     };
   }
 
@@ -100,6 +115,27 @@ class DatabaseService {
     final resourcesList = rawRes
         .map((e) => _mapToResource(Map<String, dynamic>.from(e as Map)))
         .toList();
+
+    final rawTodos = map['todos'] as List? ?? [];
+    final todosList = rawTodos.map((t) {
+      final tMap = Map<String, dynamic>.from(t as Map);
+      final rawSubTodos = tMap['subTodos'] as List? ?? [];
+      final subTodosList = rawSubTodos.map((s) {
+        final sMap = Map<String, dynamic>.from(s as Map);
+        return SubTodoItem(
+          id: sMap['id'] ?? '',
+          title: sMap['title'] ?? '',
+          isCompleted: sMap['isCompleted'] ?? false,
+        );
+      }).toList();
+
+      return TodoItem(
+        id: tMap['id'] ?? '',
+        title: tMap['title'] ?? '',
+        isCompleted: tMap['isCompleted'] ?? false,
+        subTodos: subTodosList,
+      );
+    }).toList();
 
     return ProjectItem(
       id: map['id'] ?? '',
@@ -111,6 +147,8 @@ class DatabaseService {
       color: Color(map['colorValue'] ?? 0xFF8B5CF6),
       isFavorite: map['isFavorite'] ?? false,
       resources: resourcesList,
+      bannerPath: map['bannerPath'],
+      todos: todosList,
     );
   }
 

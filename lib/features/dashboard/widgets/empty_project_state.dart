@@ -21,7 +21,7 @@ class EmptyProjectState extends StatelessWidget {
                 color: AppColor.primary.withOpacity(.08),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.folder_open_rounded,
                 size: 42,
                 color: AppColor.primary,

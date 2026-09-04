@@ -1,7 +1,9 @@
-﻿import 'package:flutter/material.dart';
+import 'dart:io';
+import 'package:flutter/material.dart';
 import 'package:organizer/app/theme/app_color.dart';
 import 'package:organizer/core/database/database_service.dart';
 import 'package:organizer/core/models/project.dart';
+import 'package:organizer/features/dashboard/widgets/project_card.dart';
 import 'package:organizer/features/project_detail/presentation/screens/project_detail_screen.dart';
 
 class BrowseScreen extends StatefulWidget {
@@ -105,7 +107,7 @@ class _BrowseScreenState extends State<BrowseScreen> {
                 ),
 
                 if (searchQuery.isEmpty && selectedCategory == 'All' && starredProjects.isNotEmpty) ...[
-                  const SliverToBoxAdapter(
+                  SliverToBoxAdapter(
                     child: Padding(
                       padding: EdgeInsets.fromLTRB(20, 8, 20, 12),
                       child: Text(
@@ -127,6 +129,10 @@ class _BrowseScreenState extends State<BrowseScreen> {
                         itemCount: starredProjects.length,
                         itemBuilder: (context, index) {
                           final project = starredProjects[index];
+                          final hasBanner = project.bannerPath != null &&
+                              project.bannerPath!.isNotEmpty &&
+                              File(project.bannerPath!).existsSync();
+
                           return GestureDetector(
                             onTap: () {
                               Navigator.push(
@@ -137,62 +143,101 @@ class _BrowseScreenState extends State<BrowseScreen> {
                               ).then((_) => setState(() {}));
                             },
                             child: Container(
-                              width: 240,
+                              width: 250,
                               margin: const EdgeInsets.only(right: 12),
-                              padding: const EdgeInsets.all(16),
                               decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  colors: [
-                                    project.color.withValues(alpha: 0.35),
-                                    AppColor.surface,
-                                  ],
-                                  begin: Alignment.topLeft,
-                                  end: Alignment.bottomRight,
-                                ),
                                 borderRadius: BorderRadius.circular(20),
-                                border: Border.all(color: project.color.withValues(alpha: 0.4)),
+                                border: Border.all(
+                                  color: hasBanner
+                                      ? Colors.white.withValues(alpha: 0.18)
+                                      : project.color.withValues(alpha: 0.4),
+                                ),
+                                image: hasBanner
+                                    ? DecorationImage(
+                                        image: FileImage(File(project.bannerPath!)),
+                                        fit: BoxFit.cover,
+                                      )
+                                    : null,
                               ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                                        decoration: BoxDecoration(
-                                          color: project.color.withValues(alpha: 0.2),
-                                          borderRadius: BorderRadius.circular(8),
+                              child: Container(
+                                padding: const EdgeInsets.all(16),
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(20),
+                                  gradient: hasBanner
+                                      ? LinearGradient(
+                                          begin: Alignment.topCenter,
+                                          end: Alignment.bottomCenter,
+                                          colors: [
+                                            Colors.black.withValues(alpha: 0.25),
+                                            Colors.black.withValues(alpha: 0.65),
+                                            Colors.black.withValues(alpha: 0.92),
+                                          ],
+                                          stops: const [0.0, 0.45, 1.0],
+                                        )
+                                      : LinearGradient(
+                                          colors: [
+                                            project.color.withValues(alpha: 0.35),
+                                            AppColor.surface,
+                                          ],
+                                          begin: Alignment.topLeft,
+                                          end: Alignment.bottomRight,
                                         ),
-                                        child: Text(
-                                          project.category,
-                                          style: TextStyle(
-                                            fontSize: 10,
-                                            fontWeight: FontWeight.bold,
-                                            color: project.color,
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                          decoration: BoxDecoration(
+                                            color: hasBanner
+                                                ? Colors.black.withValues(alpha: 0.55)
+                                                : project.color.withValues(alpha: 0.2),
+                                            borderRadius: BorderRadius.circular(8),
+                                            border: Border.all(
+                                              color: hasBanner
+                                                  ? Colors.white.withValues(alpha: 0.2)
+                                                  : project.color.withValues(alpha: 0.3),
+                                            ),
+                                          ),
+                                          child: Text(
+                                            project.category,
+                                            style: TextStyle(
+                                              fontSize: 10,
+                                              fontWeight: FontWeight.bold,
+                                              color: hasBanner ? Colors.white : project.color,
+                                            ),
                                           ),
                                         ),
-                                      ),
-                                      const Icon(Icons.star_rounded, color: Colors.amber, size: 18),
-                                    ],
-                                  ),
-                                  const Spacer(),
-                                  Text(
-                                    project.title,
-                                    style: const TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.white,
+                                        const Icon(Icons.star_rounded, color: Colors.amber, size: 18),
+                                      ],
                                     ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    ' items • Updated ',
-                                    style: const TextStyle(fontSize: 11, color: AppColor.textMuted),
-                                  ),
-                                ],
+                                    const Spacer(),
+                                    Text(
+                                      project.title,
+                                      style: const TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.white,
+                                        shadows: [
+                                          Shadow(color: Colors.black87, blurRadius: 4, offset: Offset(0, 1)),
+                                        ],
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      '${project.resources.length} items • ${project.todos.length} to-dos',
+                                      style: TextStyle(
+                                        fontSize: 11,
+                                        color: Colors.white.withValues(alpha: 0.75),
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
                           );
@@ -253,95 +298,16 @@ class _BrowseScreenState extends State<BrowseScreen> {
                           ),
                         ),
                       )
-                    : SliverPadding(
-                        padding: const EdgeInsets.symmetric(horizontal: 20),
-                        sliver: SliverList(
-                          delegate: SliverChildBuilderDelegate(
-                            (context, index) {
-                              final project = projects[index];
-                              return Card(
-                                margin: const EdgeInsets.only(bottom: 14),
-                                color: AppColor.surface,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(20),
-                                  side: BorderSide(color: AppColor.border),
-                                ),
-                                child: ListTile(
-                                  contentPadding: const EdgeInsets.all(16),
-                                  leading: Container(
-                                    width: 48,
-                                    height: 48,
-                                    decoration: BoxDecoration(
-                                      color: project.color.withValues(alpha: 0.15),
-                                      borderRadius: BorderRadius.circular(16),
-                                    ),
-                                    child: Icon(Icons.folder_open_rounded, color: project.color),
-                                  ),
-                                  title: Row(
-                                    children: [
-                                      Expanded(
-                                        child: Text(
-                                          project.title,
-                                          style: const TextStyle(
-                                            color: Colors.white,
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 16,
-                                          ),
-                                        ),
-                                      ),
-                                      if (project.isFavorite)
-                                        const Icon(Icons.star_rounded, color: Colors.amber, size: 18),
-                                    ],
-                                  ),
-                                  subtitle: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      const SizedBox(height: 6),
-                                      Text(
-                                        project.description,
-                                        style: const TextStyle(color: AppColor.textMuted, fontSize: 13),
-                                        maxLines: 2,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                      const SizedBox(height: 10),
-                                      Row(
-                                        children: [
-                                          Container(
-                                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                                            decoration: BoxDecoration(
-                                              color: AppColor.surfaceAlt,
-                                              borderRadius: BorderRadius.circular(6),
-                                            ),
-                                            child: Text(
-                                              project.category,
-                                              style: const TextStyle(fontSize: 11, color: AppColor.primarySoft),
-                                            ),
-                                          ),
-                                          const SizedBox(width: 10),
-                                          Text(
-                                            ' Resources • ',
-                                            style: TextStyle(
-                                              fontSize: 11,
-                                              color: AppColor.textMuted.withValues(alpha: 0.8),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                  onTap: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (_) => ProjectDetailScreen(project: project),
-                                      ),
-                                    ).then((_) => setState(() {}));
-                                  },
-                                ),
-                              );
-                            },
-                            childCount: projects.length,
-                          ),
+                    : SliverList(
+                        delegate: SliverChildBuilderDelegate(
+                          (context, index) {
+                            final project = projects[index];
+                            return ProjectCard(
+                              project: project,
+                              onReturn: () => setState(() {}),
+                            );
+                          },
+                          childCount: projects.length,
                         ),
                       ),
                 const SliverToBoxAdapter(child: SizedBox(height: 30)),

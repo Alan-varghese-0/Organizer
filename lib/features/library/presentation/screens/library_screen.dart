@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:organizer/app/theme/app_color.dart';
 import 'package:organizer/core/database/database_service.dart';
@@ -125,16 +125,16 @@ class _LibraryScreenState extends State<LibraryScreen> {
                     ),
                     child: Row(
                       children: [
-                        const Icon(Icons.link_rounded, color: AppColor.primary, size: 20),
+                        Icon(Icons.link_rounded, color: AppColor.primary, size: 20),
                         const SizedBox(width: 10),
                         Expanded(
                           child: Text(
                             item.url!,
-                            style: const TextStyle(color: AppColor.primary, fontSize: 13),
+                            style: TextStyle(color: AppColor.primary, fontSize: 13),
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
-                        const Icon(Icons.copy_rounded, color: AppColor.primary, size: 18),
+                        Icon(Icons.copy_rounded, color: AppColor.primary, size: 18),
                       ],
                     ),
                   ),
@@ -170,7 +170,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
                 spacing: 8,
                 children: item.tags
                     .map((t) => Chip(
-                          label: Text('#', style: const TextStyle(fontSize: 11, color: AppColor.primarySoft)),
+                          label: Text('#', style: TextStyle(fontSize: 11, color: AppColor.primarySoft)),
                           backgroundColor: AppColor.surfaceAlt,
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                         ))

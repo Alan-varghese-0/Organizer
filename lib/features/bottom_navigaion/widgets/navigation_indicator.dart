@@ -10,7 +10,7 @@ class Navigationindicator extends StatelessWidget {
       duration: const Duration(milliseconds: 250),
       width: 6,
       height: 6,
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         color: AppColor.primary,
         shape: BoxShape.circle,
       ),

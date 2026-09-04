@@ -192,26 +192,47 @@ class CreateResourceFormSheet extends StatefulWidget {
 class _CreateResourceFormSheetState extends State<CreateResourceFormSheet> {
   final _titleController = TextEditingController();
   final _contentController = TextEditingController();
+  final _urlController = TextEditingController();
   final _hex1Controller = TextEditingController(text: '#8B5CF6');
   final _hex2Controller = TextEditingController(text: '#38BDF8');
   final _hex3Controller = TextEditingController(text: '#0A0B12');
+  final _sampleTextController = TextEditingController(text: 'The quick brown fox jumps over the lazy dog');
 
+  String selectedFontFamily = 'Inter';
+  String selectedFontWeight = 'Regular';
   String? selectedProjectId;
   late List<ProjectItem> existingProjects;
+
+  final fontFamilies = const [
+    'Inter',
+    'Roboto',
+    'Outfit',
+    'Playfair Display',
+    'Fira Code',
+    'Poppins',
+    'Montserrat',
+  ];
+
+  final fontWeights = const ['Light', 'Regular', 'Medium', 'SemiBold', 'Bold'];
 
   @override
   void initState() {
     super.initState();
     existingProjects = DatabaseService.instance.getProjects();
+    if (widget.itemType == 'Link') {
+      _urlController.text = 'https://';
+    }
   }
 
   @override
   void dispose() {
     _titleController.dispose();
     _contentController.dispose();
+    _urlController.dispose();
     _hex1Controller.dispose();
     _hex2Controller.dispose();
     _hex3Controller.dispose();
+    _sampleTextController.dispose();
     super.dispose();
   }
 
@@ -234,11 +255,28 @@ class _CreateResourceFormSheetState extends State<CreateResourceFormSheet> {
     }
   }
 
+  FontWeight _getFontWeight(String weight) {
+    switch (weight) {
+      case 'Light':
+        return FontWeight.w300;
+      case 'Regular':
+        return FontWeight.w400;
+      case 'Medium':
+        return FontWeight.w500;
+      case 'SemiBold':
+        return FontWeight.w600;
+      case 'Bold':
+        return FontWeight.w700;
+      default:
+        return FontWeight.w400;
+    }
+  }
+
   Color _parseHex(String hex, Color fallback) {
     try {
       final clean = hex.replaceAll('#', '').trim();
       if (clean.length == 6) {
-        return Color(int.parse('0xFF'));
+        return Color(int.parse('0xFF$clean'));
       }
     } catch (_) {}
     return fallback;
@@ -246,181 +284,373 @@ class _CreateResourceFormSheetState extends State<CreateResourceFormSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final isColorCombo = widget.itemType == 'Color Combo';
+    final type = widget.itemType;
 
-    return Padding(
-      padding: EdgeInsets.only(
-        left: 24,
-        right: 24,
-        top: 24,
-        bottom: MediaQuery.of(context).viewInsets.bottom + 24,
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'Add ',
-                style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white),
-              ),
-              IconButton(
-                icon: const Icon(Icons.close_rounded, color: AppColor.textMuted),
-                onPressed: () => Navigator.pop(context),
-              ),
-            ],
-          ),
-          const SizedBox(height: 14),
-          TextField(
-            controller: _titleController,
-            style: const TextStyle(color: Colors.white),
-            decoration: InputDecoration(
-              labelText: ' Title',
-              hintText: 'Enter title...',
-            ),
-          ),
-          const SizedBox(height: 14),
-
-          DropdownButtonFormField<String?>(
-            initialValue: selectedProjectId,
-            dropdownColor: AppColor.surface,
-            style: const TextStyle(color: Colors.white),
-            decoration: const InputDecoration(
-              labelText: 'Assign to Existing Project',
-              hintText: 'General Library (Unassigned)',
-            ),
-            items: [
-              const DropdownMenuItem<String?>(
-                value: null,
-                child: Text('General Library (Unassigned)', style: TextStyle(color: AppColor.textMuted)),
-              ),
-              ...existingProjects.map((p) => DropdownMenuItem<String?>(
-                    value: p.id,
-                    child: Row(
-                      children: [
-                        Icon(Icons.folder_open_rounded, color: p.color, size: 18),
-                        const SizedBox(width: 8),
-                        Text(p.title, style: const TextStyle(color: Colors.white)),
-                      ],
-                    ),
-                  )),
-            ],
-            onChanged: (val) => setState(() => selectedProjectId = val),
-          ),
-
-          const SizedBox(height: 14),
-
-          if (isColorCombo) ...[
-            const Text('Color Combination / Palette Swatches', style: TextStyle(color: AppColor.textSecondary, fontSize: 13, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 10),
+    return SingleChildScrollView(
+      child: Padding(
+        padding: EdgeInsets.only(
+          left: 24,
+          right: 24,
+          top: 24,
+          bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
             Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Expanded(
-                  child: TextField(
-                    controller: _hex1Controller,
-                    onChanged: (_) => setState(() {}),
-                    style: const TextStyle(color: Colors.white, fontSize: 13),
-                    decoration: const InputDecoration(labelText: 'Primary'),
-                  ),
+                Text(
+                  'Add $type',
+                  style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white),
                 ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: TextField(
-                    controller: _hex2Controller,
-                    onChanged: (_) => setState(() {}),
-                    style: const TextStyle(color: Colors.white, fontSize: 13),
-                    decoration: const InputDecoration(labelText: 'Accent'),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: TextField(
-                    controller: _hex3Controller,
-                    onChanged: (_) => setState(() {}),
-                    style: const TextStyle(color: Colors.white, fontSize: 13),
-                    decoration: const InputDecoration(labelText: 'Background'),
-                  ),
+                IconButton(
+                  icon: const Icon(Icons.close_rounded, color: AppColor.textMuted),
+                  onPressed: () => Navigator.pop(context),
                 ),
               ],
             ),
-            const SizedBox(height: 12),
-            Container(
-              height: 44,
-              padding: const EdgeInsets.all(6),
-              decoration: BoxDecoration(
-                color: AppColor.surfaceAlt,
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: AppColor.border),
+            const SizedBox(height: 14),
+
+            // Title Field
+            TextField(
+              controller: _titleController,
+              style: const TextStyle(color: Colors.white),
+              decoration: InputDecoration(
+                labelText: '$type Title',
+                hintText: 'Enter title for this $type...',
               ),
-              child: Row(
+            ),
+            const SizedBox(height: 14),
+
+            // Assign to Project Dropdown
+            DropdownButtonFormField<String?>(
+              initialValue: selectedProjectId,
+              dropdownColor: AppColor.surface,
+              style: const TextStyle(color: Colors.white),
+              decoration: const InputDecoration(
+                labelText: 'Assign to Existing Project',
+                hintText: 'General Library (Unassigned)',
+              ),
+              items: [
+                const DropdownMenuItem<String?>(
+                  value: null,
+                  child: Text('General Library (Unassigned)', style: TextStyle(color: AppColor.textMuted)),
+                ),
+                ...existingProjects.map((p) => DropdownMenuItem<String?>(
+                      value: p.id,
+                      child: Row(
+                        children: [
+                          Icon(Icons.folder_open_rounded, color: p.color, size: 18),
+                          const SizedBox(width: 8),
+                          Text(p.title, style: const TextStyle(color: Colors.white)),
+                        ],
+                      ),
+                    )),
+              ],
+              onChanged: (val) => setState(() => selectedProjectId = val),
+            ),
+
+            const SizedBox(height: 14),
+
+            // Item-type specific fields
+            if (type == 'Note') ...[
+              TextField(
+                controller: _contentController,
+                maxLines: 4,
+                style: const TextStyle(color: Colors.white),
+                decoration: const InputDecoration(
+                  labelText: 'Note Details / Content',
+                  hintText: 'Write your notes or ideas here...',
+                ),
+              ),
+            ] else if (type == 'Link') ...[
+              TextField(
+                controller: _urlController,
+                style: const TextStyle(color: Colors.white),
+                decoration: InputDecoration(
+                  labelText: 'Web URL Address',
+                  hintText: 'https://example.com',
+                  prefixIcon: Icon(Icons.link_rounded, color: AppColor.primary),
+                ),
+              ),
+              const SizedBox(height: 14),
+              TextField(
+                controller: _contentController,
+                maxLines: 2,
+                style: const TextStyle(color: Colors.white),
+                decoration: const InputDecoration(
+                  labelText: 'Description / Notes (Optional)',
+                  hintText: 'Add brief summary or tags for this link...',
+                ),
+              ),
+            ] else if (type == 'Image') ...[
+              TextField(
+                controller: _urlController,
+                style: const TextStyle(color: Colors.white),
+                decoration: InputDecoration(
+                  labelText: 'Image Source (URL or Path)',
+                  hintText: 'https://images.unsplash.com/... or assets/image.jpg',
+                  prefixIcon: Icon(Icons.image_rounded, color: AppColor.primary),
+                ),
+              ),
+              const SizedBox(height: 14),
+              TextField(
+                controller: _contentController,
+                maxLines: 2,
+                style: const TextStyle(color: Colors.white),
+                decoration: const InputDecoration(
+                  labelText: 'Caption / Details',
+                  hintText: 'Enter image description or notes...',
+                ),
+              ),
+            ] else if (type == 'PDF') ...[
+              TextField(
+                controller: _urlController,
+                style: const TextStyle(color: Colors.white),
+                decoration: InputDecoration(
+                  labelText: 'Document Link or Path',
+                  hintText: 'https://... or docs/spec.pdf',
+                  prefixIcon: Icon(Icons.picture_as_pdf_rounded, color: AppColor.primary),
+                ),
+              ),
+              const SizedBox(height: 14),
+              TextField(
+                controller: _contentController,
+                maxLines: 2,
+                style: const TextStyle(color: Colors.white),
+                decoration: const InputDecoration(
+                  labelText: 'Document Summary',
+                  hintText: 'Summary or key takeaways from this PDF...',
+                ),
+              ),
+            ] else if (type == 'Color Combo') ...[
+              const Text('Color Swatches (Hex Codes)', style: TextStyle(color: AppColor.textSecondary, fontSize: 13, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 10),
+              Row(
                 children: [
                   Expanded(
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: _parseHex(_hex1Controller.text, AppColor.primary),
-                        borderRadius: const BorderRadius.horizontal(left: Radius.circular(10)),
-                      ),
+                    child: TextField(
+                      controller: _hex1Controller,
+                      onChanged: (_) => setState(() {}),
+                      style: const TextStyle(color: Colors.white, fontSize: 13),
+                      decoration: const InputDecoration(labelText: 'Primary'),
                     ),
                   ),
+                  const SizedBox(width: 8),
                   Expanded(
-                    child: Container(
-                      color: _parseHex(_hex2Controller.text, const Color(0xFF38BDF8)),
+                    child: TextField(
+                      controller: _hex2Controller,
+                      onChanged: (_) => setState(() {}),
+                      style: const TextStyle(color: Colors.white, fontSize: 13),
+                      decoration: const InputDecoration(labelText: 'Accent'),
                     ),
                   ),
+                  const SizedBox(width: 8),
                   Expanded(
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: _parseHex(_hex3Controller.text, const Color(0xFF0A0B12)),
-                        borderRadius: const BorderRadius.horizontal(right: Radius.circular(10)),
-                      ),
+                    child: TextField(
+                      controller: _hex3Controller,
+                      onChanged: (_) => setState(() {}),
+                      style: const TextStyle(color: Colors.white, fontSize: 13),
+                      decoration: const InputDecoration(labelText: 'Background'),
                     ),
                   ),
                 ],
               ),
-            ),
-          ] else ...[
-            TextField(
-              controller: _contentController,
-              maxLines: 3,
-              style: const TextStyle(color: Colors.white),
-              decoration: InputDecoration(
-                labelText: widget.itemType == 'Link' ? 'URL' : 'Details / Content',
-                hintText: widget.itemType == 'Link' ? 'https://...' : 'Enter content...',
+              const SizedBox(height: 14),
+              // Live Color Palette Preview Card
+              Container(
+                height: 54,
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: AppColor.surfaceAlt,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: AppColor.border),
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: _parseHex(_hex1Controller.text, AppColor.primary),
+                          borderRadius: const BorderRadius.horizontal(left: Radius.circular(12)),
+                        ),
+                        child: Center(
+                          child: Text(
+                            _hex1Controller.text,
+                            style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      child: Container(
+                        color: _parseHex(_hex2Controller.text, const Color(0xFF38BDF8)),
+                        child: Center(
+                          child: Text(
+                            _hex2Controller.text,
+                            style: const TextStyle(color: Colors.black87, fontSize: 10, fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: _parseHex(_hex3Controller.text, const Color(0xFF0A0B12)),
+                          borderRadius: const BorderRadius.horizontal(right: Radius.circular(12)),
+                        ),
+                        child: Center(
+                          child: Text(
+                            _hex3Controller.text,
+                            style: const TextStyle(color: Colors.white70, fontSize: 10, fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ],
-
-          const SizedBox(height: 24),
-          SizedBox(
-            width: double.infinity,
-            height: 52,
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColor.primary,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            ] else if (type == 'Typography') ...[
+              DropdownButtonFormField<String>(
+                initialValue: selectedFontFamily,
+                dropdownColor: AppColor.surface,
+                style: const TextStyle(color: Colors.white),
+                decoration: const InputDecoration(labelText: 'Font Family'),
+                items: fontFamilies
+                    .map((font) => DropdownMenuItem(
+                          value: font,
+                          child: Text(font, style: const TextStyle(color: Colors.white)),
+                        ))
+                    .toList(),
+                onChanged: (val) {
+                  if (val != null) setState(() => selectedFontFamily = val);
+                },
               ),
-              onPressed: () async {
-                final title = _titleController.text.trim();
-                final content = isColorCombo
-                    ? 'Color Combo Palette: , , '
-                    : _contentController.text.trim();
+              const SizedBox(height: 14),
+              const Text('Font Weight', style: TextStyle(color: AppColor.textSecondary, fontSize: 13, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 8,
+                children: fontWeights.map((w) {
+                  final isSel = selectedFontWeight == w;
+                  return ChoiceChip(
+                    label: Text(w),
+                    selected: isSel,
+                    selectedColor: AppColor.primary,
+                    backgroundColor: AppColor.surfaceAlt,
+                    labelStyle: TextStyle(
+                      color: isSel ? Colors.white : AppColor.textMuted,
+                      fontWeight: isSel ? FontWeight.bold : FontWeight.normal,
+                    ),
+                    onSelected: (_) => setState(() => selectedFontWeight = w),
+                  );
+                }).toList(),
+              ),
+              const SizedBox(height: 14),
+              TextField(
+                controller: _sampleTextController,
+                onChanged: (_) => setState(() {}),
+                style: const TextStyle(color: Colors.white),
+                decoration: const InputDecoration(
+                  labelText: 'Sample Text Preview',
+                  hintText: 'Enter sample text...',
+                ),
+              ),
+              const SizedBox(height: 14),
+              // Live Typography Preview Container
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: AppColor.surfaceAlt,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: AppColor.border),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Preview: $selectedFontFamily ($selectedFontWeight)',
+                      style: TextStyle(fontSize: 11, color: AppColor.primarySoft, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      _sampleTextController.text.isEmpty
+                          ? 'The quick brown fox jumps over the lazy dog'
+                          : _sampleTextController.text,
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: _getFontWeight(selectedFontWeight),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
 
-                if (title.isNotEmpty) {
+            const SizedBox(height: 24),
+
+            // Save Button
+            SizedBox(
+              width: double.infinity,
+              height: 52,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColor.primary,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                ),
+                onPressed: () async {
+                  final title = _titleController.text.trim();
+                  if (title.isEmpty) return;
+
                   final uniqueId = const Uuid().v4();
-                  final type = _getResourceType(widget.itemType);
+                  final resType = _getResourceType(widget.itemType);
+
+                  String content = '';
+                  String? url;
+                  String? colorHex;
+                  String? fontFamily;
+                  String category = 'General';
+
+                  if (type == 'Note') {
+                    content = _contentController.text.trim().isEmpty ? 'Notes content' : _contentController.text.trim();
+                    category = 'Notes';
+                  } else if (type == 'Link') {
+                    url = _urlController.text.trim();
+                    content = _contentController.text.trim().isEmpty ? url : _contentController.text.trim();
+                    category = 'Links';
+                  } else if (type == 'Image') {
+                    url = _urlController.text.trim();
+                    content = _contentController.text.trim().isEmpty ? 'Image asset' : _contentController.text.trim();
+                    category = 'Media';
+                  } else if (type == 'PDF') {
+                    url = _urlController.text.trim();
+                    content = _contentController.text.trim().isEmpty ? 'PDF document' : _contentController.text.trim();
+                    category = 'Media';
+                  } else if (type == 'Color Combo') {
+                    colorHex = _hex1Controller.text.trim();
+                    content = 'Palette: Primary ${_hex1Controller.text}, Accent ${_hex2Controller.text}, Background ${_hex3Controller.text}';
+                    category = 'Design Tokens';
+                  } else if (type == 'Typography') {
+                    fontFamily = selectedFontFamily;
+                    content = 'Spec: $selectedFontFamily ($selectedFontWeight) - ${_sampleTextController.text.trim()}';
+                    category = 'Design Tokens';
+                  }
 
                   final newResource = ResourceItem(
                     id: uniqueId,
                     title: title,
-                    content: content.isEmpty ? 'Saved resource' : content,
-                    type: type,
-                    category: isColorCombo ? 'Design Tokens' : 'General',
+                    content: content,
+                    type: resType,
+                    category: category,
                     createdAt: 'Just now',
-                    url: widget.itemType == 'Link' ? content : null,
-                    colorHex: isColorCombo ? _hex1Controller.text : null,
-                    tags: [widget.itemType.replaceAll(' ', '')],
+                    url: url,
+                    colorHex: colorHex,
+                    fontFamily: fontFamily,
+                    tags: [type.replaceAll(' ', '')],
                   );
 
                   await DatabaseService.instance.saveResource(newResource);
@@ -448,17 +678,20 @@ class _CreateResourceFormSheetState extends State<CreateResourceFormSheet> {
                     widget.onSaved();
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: Text('  saved successfully!'),
+                        content: Text('$type saved successfully!'),
                         backgroundColor: AppColor.primary,
                       ),
                     );
                   }
-                }
-              },
-              child: Text('Save ', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
+                },
+                child: Text(
+                  'Save $type',
+                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+                ),
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

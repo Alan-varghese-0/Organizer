@@ -2,10 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:organizer/core/database/database_service.dart';
 import 'package:organizer/app/theme/app_color.dart';
 import 'package:organizer/app/theme/app_text_style.dart';
+import 'package:organizer/app/theme/theme_notifier.dart';
 import 'package:organizer/features/bottom_navigaion/presentation/screens/main_navigation_screen.dart';
-import 'package:organizer/features/create_workspace/widgets/layout_selector.dart';
 import 'package:organizer/features/create_workspace/widgets/personality_card.dart';
-import 'package:organizer/features/create_workspace/widgets/theme_selector.dart';
 
 class WorkspaceSetupScreen extends StatefulWidget {
   const WorkspaceSetupScreen({super.key});
@@ -19,15 +18,8 @@ class _WorkspaceSetupScreenState extends State<WorkspaceSetupScreen> {
     text: "My Workspace",
   );
 
-  final TextEditingController aiController = TextEditingController(
-    text: "Organizer AI",
-  );
 
   int selectedPersonality = 0;
-  int selectedTheme = 0;
-  int selectedLayout = 0;
-
-  final themes = ["System", "Light", "Dark"];
 
   final personalities = [
     (
@@ -80,7 +72,6 @@ class _WorkspaceSetupScreenState extends State<WorkspaceSetupScreen> {
   @override
   void dispose() {
     workspaceController.dispose();
-    aiController.dispose();
     super.dispose();
   }
 
@@ -137,43 +128,6 @@ class _WorkspaceSetupScreenState extends State<WorkspaceSetupScreen> {
                 ),
               ),
 
-              const SizedBox(height: 35),
-              Text(
-                "Appearance",
-                style: AppTextStyle.title.copyWith(color: AppColor.primary),
-              ),
-
-              const SizedBox(height: 14),
-
-              ThemeSelector(
-                themes: themes,
-                selectedIndex: selectedTheme,
-                onChanged: (value) {
-                  setState(() {
-                    selectedTheme = value;
-                  });
-                },
-              ),
-
-              const SizedBox(height: 35),
-
-              Text(
-                "Dashboard Layout",
-                style: AppTextStyle.title.copyWith(color: AppColor.primary),
-              ),
-
-              const SizedBox(height: 14),
-
-              LayoutSelector(
-                selectedIndex: selectedLayout,
-                onChanged: (value) {
-                  setState(() {
-                    selectedLayout = value;
-                  });
-                },
-              ),
-
-              const SizedBox(height: 35),
 
               Text(
                 "Workspace Personality",
@@ -205,44 +159,6 @@ class _WorkspaceSetupScreenState extends State<WorkspaceSetupScreen> {
               ),
               const SizedBox(height: 35),
 
-              Text(
-                "AI Assistant",
-                style: AppTextStyle.title.copyWith(color: AppColor.primary),
-              ),
-
-              const SizedBox(height: 8),
-
-              Text(
-                "Give your AI assistant a name.",
-                style: AppTextStyle.body.copyWith(
-                  color: AppColor.textSecondary,
-                ),
-              ),
-
-              const SizedBox(height: 14),
-
-              TextField(
-                controller: aiController,
-                style: AppTextStyle.body.copyWith(color: AppColor.scaffold),
-                decoration: InputDecoration(
-                  hintText: "Organizer AI",
-                  hintStyle: AppTextStyle.body.copyWith(
-                    color: AppColor.background,
-                  ),
-                  filled: true,
-                  fillColor: Colors.white,
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 20,
-                    vertical: 18,
-                  ),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(18),
-                    borderSide: BorderSide.none,
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 45),
 
               SizedBox(
                 width: double.infinity,
@@ -257,6 +173,13 @@ class _WorkspaceSetupScreenState extends State<WorkspaceSetupScreen> {
                     ),
                   ),
                   onPressed: () async {
+                    // Save selected workspace name and personality to settings
+                    await DatabaseService.instance.updateSetting('workspaceName', workspaceController.text.trim());
+                    await DatabaseService.instance.updateSetting('personality', personalities[selectedPersonality].title);
+
+                    // Update global notifier so theme applies immediately
+                    personalityNotifier.value = personalities[selectedPersonality].title;
+
                     await DatabaseService.instance.completeOnboarding();
 
                     if (!mounted) return;
@@ -267,7 +190,6 @@ class _WorkspaceSetupScreenState extends State<WorkspaceSetupScreen> {
                         builder: (context) => const MainNavigationScreen(),
                       ),
                     );
-                    // Navigate to Dashboard
                   },
                   child: Text(
                     "Create Workspace",

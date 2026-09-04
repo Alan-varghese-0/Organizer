@@ -5,8 +5,15 @@ import 'project_card.dart';
 
 class ProjectList extends StatelessWidget {
   final int filter;
+  final String searchQuery;
+  final VoidCallback? onCreateProject;
 
-  const ProjectList({super.key, this.filter = 0});
+  const ProjectList({
+    super.key,
+    this.filter = 0,
+    this.searchQuery = '',
+    this.onCreateProject,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -15,6 +22,15 @@ class ProjectList extends StatelessWidget {
       builder: (context, box, _) {
         var projects = DatabaseService.instance.getProjects();
 
+        if (searchQuery.isNotEmpty) {
+          projects = projects
+              .where((project) =>
+                  project.title.toLowerCase().contains(searchQuery.toLowerCase()) ||
+                  project.description.toLowerCase().contains(searchQuery.toLowerCase()) ||
+                  project.category.toLowerCase().contains(searchQuery.toLowerCase()))
+              .toList();
+        }
+
         if (filter == 1) {
           projects.sort((a, b) => _recentScore(b.updated).compareTo(_recentScore(a.updated)));
         } else if (filter == 2) {
@@ -22,7 +38,7 @@ class ProjectList extends StatelessWidget {
         }
 
         if (projects.isEmpty) {
-          return EmptyProjectState(onCreateProject: () {});
+          return EmptyProjectState(onCreateProject: onCreateProject ?? () {});
         }
 
         return ListView.builder(

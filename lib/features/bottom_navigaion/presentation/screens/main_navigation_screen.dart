@@ -1,9 +1,15 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:organizer/app/theme/app_color.dart';
 import 'package:organizer/features/bottom_navigaion/widgets/bottom_navigation_bar.dart';
 import 'package:organizer/features/browse/presentation/screens/browse_screen.dart';
-import 'package:organizer/features/common/widgets/create_forms.dart';
 import 'package:organizer/features/dashboard/presentation/screens/dashboard_screen.dart';
+import 'package:organizer/features/dashboard/presentation/screens/insert_color_combo_page.dart';
+import 'package:organizer/features/dashboard/presentation/screens/insert_image_page.dart';
+import 'package:organizer/features/dashboard/presentation/screens/insert_link_page.dart';
+import 'package:organizer/features/dashboard/presentation/screens/insert_note_page.dart';
+import 'package:organizer/features/dashboard/presentation/screens/insert_pdf_page.dart';
+import 'package:organizer/features/dashboard/presentation/screens/insert_project_page.dart';
+import 'package:organizer/features/dashboard/presentation/screens/insert_typography_page.dart';
 import 'package:organizer/features/library/presentation/screens/library_screen.dart';
 import 'package:organizer/features/settings/presentation/screens/settings_screen.dart';
 
@@ -69,47 +75,29 @@ class _MainNavigationScreenState extends State<MainNavigationScreen>
     });
   }
 
-  void _openProjectForm() {
-    _toggleSpeedDial();
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: AppColor.surface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-      ),
-      builder: (ctx) => CreateProjectFormSheet(
-        onProjectCreated: () => setState(() {}),
-      ),
+  void _navigateToPage(Widget page) async {
+    if (isSpeedDialOpen) {
+      _toggleSpeedDial();
+    }
+    final res = await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => page),
     );
-  }
-
-  void _openResourceForm(String itemType) {
-    _toggleSpeedDial();
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: AppColor.surface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-      ),
-      builder: (ctx) => CreateResourceFormSheet(
-        itemType: itemType,
-        onSaved: () => setState(() {}),
-      ),
-    );
+    if (res == true && mounted) {
+      setState(() {});
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final speedDialItems = [
-      (label: 'Project', icon: Icons.create_new_folder_outlined, color: const Color(0xFF8B5CF6), onTap: _openProjectForm),
-      (label: 'Note', icon: Icons.notes_outlined, color: const Color(0xFF38BDF8), onTap: () => _openResourceForm('Note')),
-      (label: 'Link', icon: Icons.link_rounded, color: const Color(0xFF34D399), onTap: () => _openResourceForm('Link')),
-      (label: 'Image', icon: Icons.image_outlined, color: const Color(0xFFF97316), onTap: () => _openResourceForm('Image')),
-      (label: 'PDF', icon: Icons.picture_as_pdf_outlined, color: const Color(0xFFEC4899), onTap: () => _openResourceForm('PDF')),
-      (label: 'Color Combo', icon: Icons.palette_outlined, color: const Color(0xFFA855F7), onTap: () => _openResourceForm('Color Combo')),
-      (label: 'Typography', icon: Icons.text_fields_rounded, color: const Color(0xFF22C55E), onTap: () => _openResourceForm('Typography')),
+      (label: 'Project', icon: Icons.create_new_folder_outlined, color: const Color(0xFF8B5CF6), onTap: () => _navigateToPage(const InsertProjectPage())),
+      (label: 'Note', icon: Icons.notes_outlined, color: const Color(0xFF38BDF8), onTap: () => _navigateToPage(const InsertNotePage())),
+      (label: 'Link', icon: Icons.link_rounded, color: const Color(0xFF34D399), onTap: () => _navigateToPage(const InsertLinkPage())),
+      (label: 'Image', icon: Icons.image_outlined, color: const Color(0xFFF97316), onTap: () => _navigateToPage(const InsertImagePage())),
+      (label: 'PDF', icon: Icons.picture_as_pdf_outlined, color: const Color(0xFFEC4899), onTap: () => _navigateToPage(const InsertPdfPage())),
+      (label: 'Color Combo', icon: Icons.palette_outlined, color: const Color(0xFFA855F7), onTap: () => _navigateToPage(const InsertColorComboPage())),
+      (label: 'Typography', icon: Icons.text_fields_rounded, color: const Color(0xFF22C55E), onTap: () => _navigateToPage(const InsertTypographyPage())),
     ];
 
     return Scaffold(
