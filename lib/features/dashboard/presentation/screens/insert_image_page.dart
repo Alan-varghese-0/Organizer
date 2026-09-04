@@ -4,15 +4,19 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:organizer/app/theme/app_color.dart';
 import 'package:organizer/core/database/database_service.dart';
+import 'package:organizer/core/models/project.dart';
 import 'package:organizer/core/models/resource.dart';
 import 'package:organizer/features/dashboard/widgets/color_combo_picker.dart';
+import 'package:organizer/features/dashboard/widgets/project_selector.dart';
 import 'package:organizer/features/dashboard/widgets/typography_picker.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:uuid/uuid.dart';
 
 class InsertImagePage extends StatefulWidget {
-  const InsertImagePage({super.key});
+  final String? initialProjectId;
+
+  const InsertImagePage({super.key, this.initialProjectId});
 
   @override
   State<InsertImagePage> createState() => _InsertImagePageState();
@@ -25,6 +29,15 @@ class _InsertImagePageState extends State<InsertImagePage> {
   String _colorHex = '#10B981';
   String _fontFamily = 'Inter';
   bool _isPicking = false;
+  late final List<ProjectItem> _existingProjects;
+  String? _selectedProjectId;
+
+  @override
+  void initState() {
+    super.initState();
+    _existingProjects = DatabaseService.instance.getProjects();
+    _selectedProjectId = widget.initialProjectId;
+  }
 
   @override
   void dispose() {
@@ -89,6 +102,9 @@ class _InsertImagePageState extends State<InsertImagePage> {
     );
 
     await DatabaseService.instance.saveResource(resource);
+    if (_selectedProjectId != null) {
+      await DatabaseService.instance.assignResourceToProject(resource, _selectedProjectId!);
+    }
 
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -138,6 +154,12 @@ class _InsertImagePageState extends State<InsertImagePage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    ProjectSelector(
+                      projects: _existingProjects,
+                      selectedProjectId: _selectedProjectId,
+                      onChanged: (value) => setState(() => _selectedProjectId = value),
+                    ),
+                    const SizedBox(height: 20),
                     const Text(
                       'Image File',
                       style: TextStyle(color: AppColor.textMuted, fontWeight: FontWeight.w600, fontSize: 13),

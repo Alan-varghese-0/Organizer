@@ -2,13 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:organizer/app/theme/app_color.dart';
 import 'package:organizer/core/database/database_service.dart';
+import 'package:organizer/core/models/project.dart';
 import 'package:organizer/core/models/resource.dart';
 import 'package:organizer/features/dashboard/widgets/color_combo_picker.dart';
+import 'package:organizer/features/dashboard/widgets/project_selector.dart';
 import 'package:organizer/features/dashboard/widgets/typography_picker.dart';
 import 'package:uuid/uuid.dart';
 
 class InsertNotePage extends StatefulWidget {
-  const InsertNotePage({super.key});
+  final String? initialProjectId;
+
+  const InsertNotePage({super.key, this.initialProjectId});
 
   @override
   State<InsertNotePage> createState() => _InsertNotePageState();
@@ -19,6 +23,15 @@ class _InsertNotePageState extends State<InsertNotePage> {
   final TextEditingController _contentController = TextEditingController();
   String _colorHex = '#8B5CF6';
   String _fontFamily = 'Inter';
+  late final List<ProjectItem> _existingProjects;
+  String? _selectedProjectId;
+
+  @override
+  void initState() {
+    super.initState();
+    _existingProjects = DatabaseService.instance.getProjects();
+    _selectedProjectId = widget.initialProjectId;
+  }
 
   @override
   void dispose() {
@@ -50,6 +63,9 @@ class _InsertNotePageState extends State<InsertNotePage> {
     );
 
     await DatabaseService.instance.saveResource(note);
+    if (_selectedProjectId != null) {
+      await DatabaseService.instance.assignResourceToProject(note, _selectedProjectId!);
+    }
 
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -105,6 +121,12 @@ class _InsertNotePageState extends State<InsertNotePage> {
                 padding: const EdgeInsets.all(20),
                 child: Column(
                   children: [
+                    ProjectSelector(
+                      projects: _existingProjects,
+                      selectedProjectId: _selectedProjectId,
+                      onChanged: (value) => setState(() => _selectedProjectId = value),
+                    ),
+                    const SizedBox(height: 16),
                     TextField(
                       controller: _titleController,
                       style: GoogleFonts.getFont(

@@ -61,6 +61,28 @@ class DatabaseService {
     await _resourcesBox.put(r.id, _resourceToMap(r));
   }
 
+  Future<void> assignResourceToProject(ResourceItem resource, String projectId) async {
+    final project = getProjects().where((p) => p.id == projectId).firstOrNull;
+    if (project == null) {
+      throw StateError('Project $projectId was not found.');
+    }
+
+    final updatedProject = ProjectItem(
+      id: project.id,
+      title: project.title,
+      description: project.description,
+      category: project.category,
+      itemsCount: project.itemsCount + 1,
+      updated: 'Just now',
+      color: project.color,
+      isFavorite: project.isFavorite,
+      resources: [...project.resources, resource],
+      bannerPath: project.bannerPath,
+      todos: project.todos,
+    );
+    await saveProject(updatedProject);
+  }
+
   Map<String, dynamic> getSettings() {
     return {
       'workspaceName': _settingsBox.get('workspaceName', defaultValue: 'My Workspace'),

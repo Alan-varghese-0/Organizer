@@ -4,15 +4,19 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:organizer/app/theme/app_color.dart';
 import 'package:organizer/core/database/database_service.dart';
+import 'package:organizer/core/models/project.dart';
 import 'package:organizer/core/models/resource.dart';
 import 'package:organizer/features/dashboard/widgets/color_combo_picker.dart';
+import 'package:organizer/features/dashboard/widgets/project_selector.dart';
 import 'package:organizer/features/dashboard/widgets/typography_picker.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:uuid/uuid.dart';
 
 class InsertPdfPage extends StatefulWidget {
-  const InsertPdfPage({super.key});
+  final String? initialProjectId;
+
+  const InsertPdfPage({super.key, this.initialProjectId});
 
   @override
   State<InsertPdfPage> createState() => _InsertPdfPageState();
@@ -26,6 +30,15 @@ class _InsertPdfPageState extends State<InsertPdfPage> {
   String _colorHex = '#EF4444';
   String _fontFamily = 'Inter';
   bool _isPicking = false;
+  late final List<ProjectItem> _existingProjects;
+  String? _selectedProjectId;
+
+  @override
+  void initState() {
+    super.initState();
+    _existingProjects = DatabaseService.instance.getProjects();
+    _selectedProjectId = widget.initialProjectId;
+  }
 
   @override
   void dispose() {
@@ -101,6 +114,9 @@ class _InsertPdfPageState extends State<InsertPdfPage> {
     );
 
     await DatabaseService.instance.saveResource(resource);
+    if (_selectedProjectId != null) {
+      await DatabaseService.instance.assignResourceToProject(resource, _selectedProjectId!);
+    }
 
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -150,6 +166,12 @@ class _InsertPdfPageState extends State<InsertPdfPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    ProjectSelector(
+                      projects: _existingProjects,
+                      selectedProjectId: _selectedProjectId,
+                      onChanged: (value) => setState(() => _selectedProjectId = value),
+                    ),
+                    const SizedBox(height: 20),
                     const Text(
                       'PDF File',
                       style: TextStyle(color: AppColor.textMuted, fontWeight: FontWeight.w600, fontSize: 13),

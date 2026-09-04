@@ -7,7 +7,9 @@ import 'package:organizer/features/dashboard/widgets/blossom_color_picker.dart';
 import 'package:uuid/uuid.dart';
 
 class InsertColorComboPage extends StatefulWidget {
-  const InsertColorComboPage({super.key});
+  final String? initialProjectId;
+
+  const InsertColorComboPage({super.key, this.initialProjectId});
 
   @override
   State<InsertColorComboPage> createState() => _InsertColorComboPageState();
@@ -28,6 +30,7 @@ class _InsertColorComboPageState extends State<InsertColorComboPage> {
   void initState() {
     super.initState();
     existingProjects = DatabaseService.instance.getProjects();
+    selectedProjectId = widget.initialProjectId;
   }
 
   @override

@@ -1,10 +1,18 @@
-import 'dart:io';
+﻿import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:organizer/app/theme/app_color.dart';
 import 'package:organizer/core/database/database_service.dart';
 import 'package:organizer/core/models/project.dart';
 import 'package:organizer/core/models/resource.dart';
+import 'package:organizer/features/dashboard/presentation/screens/insert_color_combo_page.dart';
+import 'package:organizer/features/dashboard/presentation/screens/insert_image_page.dart';
+import 'package:organizer/features/dashboard/presentation/screens/insert_link_page.dart';
+import 'package:organizer/features/dashboard/presentation/screens/insert_note_page.dart';
+import 'package:organizer/features/dashboard/presentation/screens/insert_pdf_page.dart';
+import 'package:organizer/features/dashboard/presentation/screens/insert_todo_page.dart';
+import 'package:organizer/features/dashboard/presentation/screens/insert_typography_page.dart';
+import 'package:organizer/features/project_detail/widgets/project_speed_dial.dart';
 import 'package:uuid/uuid.dart';
 
 class ProjectDetailScreen extends StatefulWidget {
@@ -23,7 +31,14 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
   late List<TodoItem> todos;
   final Set<String> expandedTodoIds = {};
 
-  final categories = const ['All', 'To-Dos', 'Notes', 'Links', 'Media', 'Design Specs'];
+  final categories = const [
+    'All',
+    'To-Dos',
+    'Notes',
+    'Links',
+    'Media',
+    'Design Specs',
+  ];
 
   @override
   void initState() {
@@ -43,10 +58,20 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
       return items.where((i) => i.type == ResourceType.link).toList();
     }
     if (selectedCategoryIndex == 4) {
-      return items.where((i) => i.type == ResourceType.image || i.type == ResourceType.pdf).toList();
+      return items
+          .where(
+            (i) => i.type == ResourceType.image || i.type == ResourceType.pdf,
+          )
+          .toList();
     }
     if (selectedCategoryIndex == 5) {
-      return items.where((i) => i.type == ResourceType.color || i.type == ResourceType.typography).toList();
+      return items
+          .where(
+            (i) =>
+                i.type == ResourceType.color ||
+                i.type == ResourceType.typography,
+          )
+          .toList();
     }
     return items;
   }
@@ -73,12 +98,18 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
 
     // If trying to mark the parent todo as completed, ensure all sub-tasks are completed first
     final hasSubTodos = current.subTodos.isNotEmpty;
-    final allSubDone = hasSubTodos ? current.subTodos.every((s) => s.isCompleted) : true;
+    final allSubDone = hasSubTodos
+        ? current.subTodos.every((s) => s.isCompleted)
+        : true;
 
     if (!current.isCompleted && hasSubTodos && !allSubDone) {
       // Notify the user and prevent checking the main todo
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Complete all sub-tasks before marking this task complete')),
+        const SnackBar(
+          content: Text(
+            'Complete all sub-tasks before marking this task complete',
+          ),
+        ),
       );
       return;
     }
@@ -94,13 +125,17 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
       final parent = todos[todoIndex];
       final updatedSubTodos = List<SubTodoItem>.from(parent.subTodos);
       final currentSub = updatedSubTodos[subIndex];
-      updatedSubTodos[subIndex] = currentSub.copyWith(isCompleted: !currentSub.isCompleted);
-      
+      updatedSubTodos[subIndex] = currentSub.copyWith(
+        isCompleted: !currentSub.isCompleted,
+      );
+
       // Auto complete parent if all sub-todos are completed
       final allSubDone = updatedSubTodos.every((s) => s.isCompleted);
       todos[todoIndex] = parent.copyWith(
         subTodos: updatedSubTodos,
-        isCompleted: updatedSubTodos.isNotEmpty ? allSubDone : parent.isCompleted,
+        isCompleted: updatedSubTodos.isNotEmpty
+            ? allSubDone
+            : parent.isCompleted,
       );
     });
     _saveProjectState();
@@ -136,10 +171,17 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                     children: [
                       const Text(
                         'Add New To-Do',
-                        style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                       IconButton(
-                        icon: const Icon(Icons.close_rounded, color: AppColor.textMuted),
+                        icon: const Icon(
+                          Icons.close_rounded,
+                          color: AppColor.textMuted,
+                        ),
                         onPressed: () => Navigator.pop(context),
                       ),
                     ],
@@ -166,7 +208,11 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                     children: [
                       const Text(
                         'Sub-tasks / Steps',
-                        style: TextStyle(color: AppColor.textSecondary, fontSize: 13, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                          color: AppColor.textSecondary,
+                          fontSize: 13,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                       TextButton.icon(
                         onPressed: () {
@@ -174,8 +220,18 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                             subTodoControllers.add(TextEditingController());
                           });
                         },
-                        icon: Icon(Icons.add_rounded, size: 16, color: AppColor.primary),
-                        label: Text('Add Sub-task', style: TextStyle(color: AppColor.primary, fontSize: 12)),
+                        icon: Icon(
+                          Icons.add_rounded,
+                          size: 16,
+                          color: AppColor.primary,
+                        ),
+                        label: Text(
+                          'Add Sub-task',
+                          style: TextStyle(
+                            color: AppColor.primary,
+                            fontSize: 12,
+                          ),
+                        ),
                       ),
                     ],
                   ),
@@ -189,17 +245,29 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                           padding: const EdgeInsets.only(bottom: 8),
                           child: Row(
                             children: [
-                              const Icon(Icons.subdirectory_arrow_right_rounded, color: AppColor.textMuted, size: 18),
+                              const Icon(
+                                Icons.subdirectory_arrow_right_rounded,
+                                color: AppColor.textMuted,
+                                size: 18,
+                              ),
                               const SizedBox(width: 8),
                               Expanded(
                                 child: TextField(
                                   controller: subTodoControllers[subIdx],
-                                  style: const TextStyle(color: Colors.white, fontSize: 14),
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 14,
+                                  ),
                                   decoration: InputDecoration(
                                     hintText: 'Sub-task detail...',
-                                    hintStyle: const TextStyle(color: AppColor.textMuted),
+                                    hintStyle: const TextStyle(
+                                      color: AppColor.textMuted,
+                                    ),
                                     isDense: true,
-                                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                                    contentPadding: const EdgeInsets.symmetric(
+                                      horizontal: 12,
+                                      vertical: 10,
+                                    ),
                                     filled: true,
                                     fillColor: AppColor.surfaceAlt,
                                     border: OutlineInputBorder(
@@ -210,7 +278,11 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                                 ),
                               ),
                               IconButton(
-                                icon: const Icon(Icons.remove_circle_outline_rounded, color: Colors.redAccent, size: 20),
+                                icon: const Icon(
+                                  Icons.remove_circle_outline_rounded,
+                                  color: Colors.redAccent,
+                                  size: 20,
+                                ),
                                 onPressed: () {
                                   setModalState(() {
                                     subTodoControllers.removeAt(subIdx);
@@ -234,7 +306,13 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                         final newSubTodos = subTodoControllers
                             .map((c) => c.text.trim())
                             .where((t) => t.isNotEmpty)
-                            .map((t) => SubTodoItem(id: const Uuid().v4(), title: t, isCompleted: false))
+                            .map(
+                              (t) => SubTodoItem(
+                                id: const Uuid().v4(),
+                                title: t,
+                                isCompleted: false,
+                              ),
+                            )
                             .toList();
 
                         final newTodo = TodoItem(
@@ -253,9 +331,17 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColor.primary,
                         foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
                       ),
-                      child: const Text('Add To-Do', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                      child: const Text(
+                        'Add To-Do',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 15,
+                        ),
+                      ),
                     ),
                   ),
                 ],
@@ -298,10 +384,17 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                     children: [
                       const Text(
                         'Edit To-Do',
-                        style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                       IconButton(
-                        icon: const Icon(Icons.delete_outline_rounded, color: Colors.redAccent),
+                        icon: const Icon(
+                          Icons.delete_outline_rounded,
+                          color: Colors.redAccent,
+                        ),
                         onPressed: () {
                           setState(() {
                             todos.removeAt(todoIndex);
@@ -318,7 +411,9 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                     style: const TextStyle(color: Colors.white, fontSize: 16),
                     decoration: InputDecoration(
                       labelText: 'To-Do Title',
-                      labelStyle: const TextStyle(color: AppColor.textSecondary),
+                      labelStyle: const TextStyle(
+                        color: AppColor.textSecondary,
+                      ),
                       filled: true,
                       fillColor: AppColor.surfaceAlt,
                       border: OutlineInputBorder(
@@ -330,7 +425,11 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                   const SizedBox(height: 16),
                   const Text(
                     'Sub-tasks',
-                    style: TextStyle(color: AppColor.textSecondary, fontSize: 13, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                      color: AppColor.textSecondary,
+                      fontSize: 13,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   const SizedBox(height: 8),
                   if (currentSubTodos.isNotEmpty)
@@ -349,7 +448,9 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                                 activeColor: AppColor.primary,
                                 onChanged: (val) {
                                   setModalState(() {
-                                    currentSubTodos[sIdx] = sub.copyWith(isCompleted: val ?? false);
+                                    currentSubTodos[sIdx] = sub.copyWith(
+                                      isCompleted: val ?? false,
+                                    );
                                   });
                                 },
                               ),
@@ -357,14 +458,22 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                                 child: Text(
                                   sub.title,
                                   style: TextStyle(
-                                    color: sub.isCompleted ? AppColor.textMuted : Colors.white,
-                                    decoration: sub.isCompleted ? TextDecoration.lineThrough : null,
+                                    color: sub.isCompleted
+                                        ? AppColor.textMuted
+                                        : Colors.white,
+                                    decoration: sub.isCompleted
+                                        ? TextDecoration.lineThrough
+                                        : null,
                                     fontSize: 14,
                                   ),
                                 ),
                               ),
                               IconButton(
-                                icon: const Icon(Icons.close_rounded, color: AppColor.textMuted, size: 18),
+                                icon: const Icon(
+                                  Icons.close_rounded,
+                                  color: AppColor.textMuted,
+                                  size: 18,
+                                ),
                                 onPressed: () {
                                   setModalState(() {
                                     currentSubTodos.removeAt(sIdx);
@@ -382,12 +491,20 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                       Expanded(
                         child: TextField(
                           controller: newSubController,
-                          style: const TextStyle(color: Colors.white, fontSize: 14),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 14,
+                          ),
                           decoration: InputDecoration(
                             hintText: 'Add new sub-task...',
-                            hintStyle: const TextStyle(color: AppColor.textMuted),
+                            hintStyle: const TextStyle(
+                              color: AppColor.textMuted,
+                            ),
                             isDense: true,
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 10,
+                            ),
                             filled: true,
                             fillColor: AppColor.surfaceAlt,
                             border: OutlineInputBorder(
@@ -403,16 +520,20 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                           final text = newSubController.text.trim();
                           if (text.isEmpty) return;
                           setModalState(() {
-                            currentSubTodos.add(SubTodoItem(
-                              id: const Uuid().v4(),
-                              title: text,
-                              isCompleted: false,
-                            ));
+                            currentSubTodos.add(
+                              SubTodoItem(
+                                id: const Uuid().v4(),
+                                title: text,
+                                isCompleted: false,
+                              ),
+                            );
                             newSubController.clear();
                           });
                         },
                         icon: const Icon(Icons.add_rounded, size: 20),
-                        style: IconButton.styleFrom(backgroundColor: AppColor.primary),
+                        style: IconButton.styleFrom(
+                          backgroundColor: AppColor.primary,
+                        ),
                       ),
                     ],
                   ),
@@ -426,7 +547,9 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                         if (title.isEmpty) return;
 
                         setState(() {
-                          final allDone = currentSubTodos.isNotEmpty ? currentSubTodos.every((s) => s.isCompleted) : todo.isCompleted;
+                          final allDone = currentSubTodos.isNotEmpty
+                              ? currentSubTodos.every((s) => s.isCompleted)
+                              : todo.isCompleted;
                           todos[todoIndex] = todo.copyWith(
                             title: title,
                             subTodos: currentSubTodos,
@@ -439,9 +562,17 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColor.primary,
                         foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
                       ),
-                      child: const Text('Save Changes', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                      child: const Text(
+                        'Save Changes',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 15,
+                        ),
+                      ),
                     ),
                   ),
                 ],
@@ -475,7 +606,11 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                       color: AppColor.primary.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: Icon(item.type.icon, color: AppColor.primary, size: 24),
+                    child: Icon(
+                      item.type.icon,
+                      color: AppColor.primary,
+                      size: 24,
+                    ),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
@@ -505,7 +640,11 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                 ),
                 child: Text(
                   item.content,
-                  style: const TextStyle(fontSize: 14, color: AppColor.textSecondary, height: 1.4),
+                  style: const TextStyle(
+                    fontSize: 14,
+                    color: AppColor.textSecondary,
+                    height: 1.4,
+                  ),
                 ),
               ),
               if (item.url != null) ...[
@@ -514,28 +653,46 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                   onTap: () {
                     Clipboard.setData(ClipboardData(text: item.url!));
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Link copied to clipboard!')),
+                      const SnackBar(
+                        content: Text('Link copied to clipboard!'),
+                      ),
                     );
                   },
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
                     decoration: BoxDecoration(
                       color: AppColor.primary.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(14),
-                      border: Border.all(color: AppColor.primary.withValues(alpha: 0.3)),
+                      border: Border.all(
+                        color: AppColor.primary.withValues(alpha: 0.3),
+                      ),
                     ),
                     child: Row(
                       children: [
-                        Icon(Icons.link_rounded, color: AppColor.primary, size: 20),
+                        Icon(
+                          Icons.link_rounded,
+                          color: AppColor.primary,
+                          size: 20,
+                        ),
                         const SizedBox(width: 10),
                         Expanded(
                           child: Text(
                             item.url!,
-                            style: TextStyle(color: AppColor.primary, fontSize: 13),
+                            style: TextStyle(
+                              color: AppColor.primary,
+                              fontSize: 13,
+                            ),
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
-                        Icon(Icons.copy_rounded, color: AppColor.primary, size: 18),
+                        Icon(
+                          Icons.copy_rounded,
+                          color: AppColor.primary,
+                          size: 18,
+                        ),
                       ],
                     ),
                   ),
@@ -549,18 +706,84 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
     );
   }
 
+  Future<void> _openAddPage(Widget page) async {
+    await Navigator.push(context, MaterialPageRoute(builder: (_) => page));
+    if (!mounted) return;
+
+    final updatedProject = DatabaseService.instance
+        .getProjects()
+        .where((project) => project.id == widget.project.id)
+        .firstOrNull;
+    if (updatedProject != null) {
+      setState(() {
+        items = List.from(updatedProject.resources);
+        todos = List.from(updatedProject.todos);
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final hasBanner = widget.project.bannerPath != null && File(widget.project.bannerPath!).existsSync();
+    final hasBanner =
+        widget.project.bannerPath != null &&
+        File(widget.project.bannerPath!).existsSync();
+    final speedDialItems = [
+      ProjectSpeedDialItem(
+        label: 'To-Do',
+        icon: Icons.checklist_rounded,
+        color: const Color(0xFF8B5CF6),
+        onTap: () => _openAddPage(InsertTodoPage(projectId: widget.project.id)),
+      ),
+      ProjectSpeedDialItem(
+        label: 'Note',
+        icon: Icons.notes_outlined,
+        color: const Color(0xFF38BDF8),
+        onTap: () =>
+            _openAddPage(InsertNotePage(initialProjectId: widget.project.id)),
+      ),
+      ProjectSpeedDialItem(
+        label: 'Link',
+        icon: Icons.link_rounded,
+        color: const Color(0xFF34D399),
+        onTap: () =>
+            _openAddPage(InsertLinkPage(initialProjectId: widget.project.id)),
+      ),
+      ProjectSpeedDialItem(
+        label: 'Image',
+        icon: Icons.image_outlined,
+        color: const Color(0xFFF97316),
+        onTap: () =>
+            _openAddPage(InsertImagePage(initialProjectId: widget.project.id)),
+      ),
+      ProjectSpeedDialItem(
+        label: 'PDF',
+        icon: Icons.picture_as_pdf_outlined,
+        color: const Color(0xFFEC4899),
+        onTap: () =>
+            _openAddPage(InsertPdfPage(initialProjectId: widget.project.id)),
+      ),
+      ProjectSpeedDialItem(
+        label: 'Color Combo',
+        icon: Icons.palette_outlined,
+        color: const Color(0xFFA855F7),
+        onTap: () => _openAddPage(
+          InsertColorComboPage(initialProjectId: widget.project.id),
+        ),
+      ),
+      ProjectSpeedDialItem(
+        label: 'Typography',
+        icon: Icons.text_fields_rounded,
+        color: const Color(0xFF22C55E),
+        onTap: () => _openAddPage(
+          InsertTypographyPage(initialProjectId: widget.project.id),
+        ),
+      ),
+    ];
 
     return Scaffold(
       backgroundColor: AppColor.background,
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _openAddTodoDialog,
-        backgroundColor: AppColor.primary,
-        icon: const Icon(Icons.add_task_rounded, color: Colors.white),
-        label: const Text('Add To-Do', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+      floatingActionButton: ProjectSpeedDial(items: speedDialItems),
       body: CustomScrollView(
         slivers: [
           SliverAppBar(
@@ -568,7 +791,10 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
             pinned: true,
             backgroundColor: AppColor.background,
             leading: IconButton(
-              icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white),
+              icon: const Icon(
+                Icons.arrow_back_ios_new_rounded,
+                color: Colors.white,
+              ),
               onPressed: () => Navigator.pop(context),
             ),
             actions: [
@@ -591,15 +817,25 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                     context: context,
                     builder: (dialogContext) => AlertDialog(
                       title: const Text('Delete project?'),
-                      content: const Text('This project and its saved resources will be removed.'),
+                      content: const Text(
+                        'This project and its saved resources will be removed.',
+                      ),
                       actions: [
-                        TextButton(onPressed: () => Navigator.pop(dialogContext, false), child: const Text('Cancel')),
-                        FilledButton(onPressed: () => Navigator.pop(dialogContext, true), child: const Text('Delete')),
+                        TextButton(
+                          onPressed: () => Navigator.pop(dialogContext, false),
+                          child: const Text('Cancel'),
+                        ),
+                        FilledButton(
+                          onPressed: () => Navigator.pop(dialogContext, true),
+                          child: const Text('Delete'),
+                        ),
                       ],
                     ),
                   );
                   if (shouldDelete != true) return;
-                  await DatabaseService.instance.deleteProject(widget.project.id);
+                  await DatabaseService.instance.deleteProject(
+                    widget.project.id,
+                  );
                   if (!mounted) return;
                   Navigator.pop(context);
                 },
@@ -618,7 +854,9 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         colors: [
-                          hasBanner ? Colors.black.withValues(alpha: 0.75) : widget.project.color.withValues(alpha: 0.35),
+                          hasBanner
+                              ? Colors.black.withValues(alpha: 0.75)
+                              : widget.project.color.withValues(alpha: 0.35),
                           AppColor.background,
                         ],
                         begin: Alignment.topCenter,
@@ -631,11 +869,18 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 4,
+                          ),
                           decoration: BoxDecoration(
                             color: widget.project.color.withValues(alpha: 0.25),
                             borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: widget.project.color.withValues(alpha: 0.5)),
+                            border: Border.all(
+                              color: widget.project.color.withValues(
+                                alpha: 0.5,
+                              ),
+                            ),
                           ),
                           child: Text(
                             widget.project.category.toUpperCase(),
@@ -658,7 +903,10 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                         const SizedBox(height: 6),
                         Text(
                           widget.project.description,
-                          style: const TextStyle(fontSize: 13, color: AppColor.textSecondary),
+                          style: const TextStyle(
+                            fontSize: 13,
+                            color: AppColor.textSecondary,
+                          ),
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -689,9 +937,13 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                       backgroundColor: AppColor.surface,
                       labelStyle: TextStyle(
                         color: selected ? Colors.white : AppColor.textMuted,
-                        fontWeight: selected ? FontWeight.bold : FontWeight.normal,
+                        fontWeight: selected
+                            ? FontWeight.bold
+                            : FontWeight.normal,
                       ),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
                       onSelected: (_) {
                         setState(() {
                           selectedCategoryIndex = index;
@@ -719,22 +971,37 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                       children: [
                         Row(
                           children: [
-                            Icon(Icons.task_alt_rounded, color: AppColor.primary, size: 20),
+                            Icon(
+                              Icons.task_alt_rounded,
+                              color: AppColor.primary,
+                              size: 20,
+                            ),
                             const SizedBox(width: 8),
                             const Text(
                               'Project To-Dos',
-                              style: TextStyle(color: Colors.white, fontSize: 17, fontWeight: FontWeight.bold),
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 17,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                             const SizedBox(width: 8),
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 2,
+                              ),
                               decoration: BoxDecoration(
                                 color: AppColor.primary.withValues(alpha: 0.2),
                                 borderRadius: BorderRadius.circular(10),
                               ),
                               child: Text(
                                 '${todos.where((t) => t.isCompleted).length}/${todos.length}',
-                                style: TextStyle(color: AppColor.primary, fontSize: 12, fontWeight: FontWeight.bold),
+                                style: TextStyle(
+                                  color: AppColor.primary,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                             ),
                           ],
@@ -742,7 +1009,13 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                         TextButton.icon(
                           onPressed: _openAddTodoDialog,
                           icon: const Icon(Icons.add_rounded, size: 16),
-                          label: const Text('Add Task', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                          label: const Text(
+                            'Add Task',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                         ),
                       ],
                     ),
@@ -758,11 +1031,27 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                         ),
                         child: Column(
                           children: [
-                            const Icon(Icons.checklist_rounded, color: AppColor.textMuted, size: 40),
+                            const Icon(
+                              Icons.checklist_rounded,
+                              color: AppColor.textMuted,
+                              size: 40,
+                            ),
                             const SizedBox(height: 8),
-                            const Text('No To-Dos added yet', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
+                            const Text(
+                              'No To-Dos added yet',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
                             const SizedBox(height: 4),
-                            const Text('Tap "Add To-Do" button to create tasks & sub-tasks', style: TextStyle(color: AppColor.textMuted, fontSize: 12)),
+                            const Text(
+                              'Tap "Add To-Do" button to create tasks & sub-tasks',
+                              style: TextStyle(
+                                color: AppColor.textMuted,
+                                fontSize: 12,
+                              ),
+                            ),
                           ],
                         ),
                       )
@@ -774,49 +1063,75 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                         itemBuilder: (context, tIdx) {
                           final todo = todos[tIdx];
                           final isExpanded = expandedTodoIds.contains(todo.id);
-                          final completedSubCount = todo.subTodos.where((s) => s.isCompleted).length;
+                          final completedSubCount = todo.subTodos
+                              .where((s) => s.isCompleted)
+                              .length;
 
                           return Material(
                             color: AppColor.surface,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(16),
-                              side: BorderSide(color: todo.isCompleted ? AppColor.primary.withValues(alpha: 0.3) : AppColor.border),
+                              side: BorderSide(
+                                color: todo.isCompleted
+                                    ? AppColor.primary.withValues(alpha: 0.3)
+                                    : AppColor.border,
+                              ),
                             ),
                             clipBehavior: Clip.antiAlias,
                             child: Column(
                               children: [
                                 ListTile(
-                                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 4,
+                                  ),
                                   leading: Checkbox(
                                     value: todo.isCompleted,
                                     activeColor: AppColor.primary,
-                                    onChanged: (_) => _toggleTodoCompleted(tIdx),
+                                    onChanged: (_) =>
+                                        _toggleTodoCompleted(tIdx),
                                   ),
                                   title: Text(
                                     todo.title,
                                     style: TextStyle(
-                                      color: todo.isCompleted ? AppColor.textMuted : Colors.white,
+                                      color: todo.isCompleted
+                                          ? AppColor.textMuted
+                                          : Colors.white,
                                       fontWeight: FontWeight.w600,
-                                      decoration: todo.isCompleted ? TextDecoration.lineThrough : null,
+                                      decoration: todo.isCompleted
+                                          ? TextDecoration.lineThrough
+                                          : null,
                                     ),
                                   ),
                                   subtitle: todo.subTodos.isNotEmpty
                                       ? Text(
                                           '$completedSubCount of ${todo.subTodos.length} sub-tasks completed',
-                                          style: const TextStyle(color: AppColor.textMuted, fontSize: 12),
+                                          style: const TextStyle(
+                                            color: AppColor.textMuted,
+                                            fontSize: 12,
+                                          ),
                                         )
                                       : null,
                                   trailing: Row(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
                                       IconButton(
-                                        icon: const Icon(Icons.edit_rounded, color: AppColor.textMuted, size: 18),
-                                        onPressed: () => _openEditTodoDialog(todo, tIdx),
+                                        icon: const Icon(
+                                          Icons.edit_rounded,
+                                          color: AppColor.textMuted,
+                                          size: 18,
+                                        ),
+                                        onPressed: () =>
+                                            _openEditTodoDialog(todo, tIdx),
                                       ),
                                       if (todo.subTodos.isNotEmpty)
                                         IconButton(
                                           icon: Icon(
-                                            isExpanded ? Icons.keyboard_arrow_up_rounded : Icons.keyboard_arrow_down_rounded,
+                                            isExpanded
+                                                ? Icons
+                                                      .keyboard_arrow_up_rounded
+                                                : Icons
+                                                      .keyboard_arrow_down_rounded,
                                             color: AppColor.textMuted,
                                           ),
                                           onPressed: () {
@@ -832,33 +1147,60 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                                     ],
                                   ),
                                 ),
-                                if (isExpanded || (todo.subTodos.isNotEmpty && selectedCategoryIndex == 1))
+                                if (isExpanded ||
+                                    (todo.subTodos.isNotEmpty &&
+                                        selectedCategoryIndex == 1))
                                   Container(
-                                    padding: const EdgeInsets.only(left: 48, right: 16, bottom: 12),
+                                    padding: const EdgeInsets.only(
+                                      left: 48,
+                                      right: 16,
+                                      bottom: 12,
+                                    ),
                                     child: Column(
-                                      children: todo.subTodos.asMap().entries.map((entry) {
+                                      children: todo.subTodos.asMap().entries.map((
+                                        entry,
+                                      ) {
                                         final sIdx = entry.key;
                                         final sub = entry.value;
                                         return InkWell(
-                                          onTap: () => _toggleSubTodoCompleted(tIdx, sIdx),
-                                          borderRadius: BorderRadius.circular(8),
+                                          onTap: () => _toggleSubTodoCompleted(
+                                            tIdx,
+                                            sIdx,
+                                          ),
+                                          borderRadius: BorderRadius.circular(
+                                            8,
+                                          ),
                                           child: Padding(
-                                            padding: const EdgeInsets.symmetric(vertical: 4),
+                                            padding: const EdgeInsets.symmetric(
+                                              vertical: 4,
+                                            ),
                                             child: Row(
                                               children: [
                                                 Icon(
-                                                  sub.isCompleted ? Icons.check_circle_rounded : Icons.radio_button_unchecked_rounded,
+                                                  sub.isCompleted
+                                                      ? Icons
+                                                            .check_circle_rounded
+                                                      : Icons
+                                                            .radio_button_unchecked_rounded,
                                                   size: 18,
-                                                  color: sub.isCompleted ? AppColor.primary : AppColor.textMuted,
+                                                  color: sub.isCompleted
+                                                      ? AppColor.primary
+                                                      : AppColor.textMuted,
                                                 ),
                                                 const SizedBox(width: 10),
                                                 Expanded(
                                                   child: Text(
                                                     sub.title,
                                                     style: TextStyle(
-                                                      color: sub.isCompleted ? AppColor.textMuted : Colors.white70,
+                                                      color: sub.isCompleted
+                                                          ? AppColor.textMuted
+                                                          : Colors.white70,
                                                       fontSize: 13,
-                                                      decoration: sub.isCompleted ? TextDecoration.lineThrough : null,
+                                                      decoration:
+                                                          sub.isCompleted
+                                                          ? TextDecoration
+                                                                .lineThrough
+                                                          : null,
                                                     ),
                                                   ),
                                                 ),
@@ -882,7 +1224,8 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
 
           // Render Resources list section if category is not 'To-Dos'
           if (selectedCategoryIndex != 1)
-            filteredItems.isEmpty && (selectedCategoryIndex != 0 || todos.isNotEmpty)
+            filteredItems.isEmpty &&
+                    (selectedCategoryIndex != 0 || todos.isNotEmpty)
                 ? SliverToBoxAdapter(
                     child: Padding(
                       padding: const EdgeInsets.symmetric(vertical: 24),
@@ -890,11 +1233,18 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.folder_open_rounded, size: 48, color: AppColor.textMuted.withValues(alpha: 0.5)),
+                            Icon(
+                              Icons.folder_open_rounded,
+                              size: 48,
+                              color: AppColor.textMuted.withValues(alpha: 0.5),
+                            ),
                             const SizedBox(height: 8),
                             const Text(
                               'No saved resources in this category',
-                              style: TextStyle(color: AppColor.textMuted, fontSize: 14),
+                              style: TextStyle(
+                                color: AppColor.textMuted,
+                                fontSize: 14,
+                              ),
                             ),
                           ],
                         ),
@@ -904,47 +1254,55 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                 : SliverPadding(
                     padding: const EdgeInsets.symmetric(horizontal: 20),
                     sliver: SliverList(
-                      delegate: SliverChildBuilderDelegate(
-                        (context, index) {
-                          final item = filteredItems[index];
-                          return Card(
-                            margin: const EdgeInsets.only(bottom: 12),
-                            color: AppColor.surface,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-                            child: ListTile(
-                              contentPadding: const EdgeInsets.all(14),
-                              leading: Container(
-                                width: 46,
-                                height: 46,
-                                decoration: BoxDecoration(
-                                  color: AppColor.primary.withValues(alpha: 0.12),
-                                  borderRadius: BorderRadius.circular(14),
-                                ),
-                                child: Icon(item.type.icon, color: AppColor.primary),
+                      delegate: SliverChildBuilderDelegate((context, index) {
+                        final item = filteredItems[index];
+                        return Card(
+                          margin: const EdgeInsets.only(bottom: 12),
+                          color: AppColor.surface,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(18),
+                          ),
+                          child: ListTile(
+                            contentPadding: const EdgeInsets.all(14),
+                            leading: Container(
+                              width: 46,
+                              height: 46,
+                              decoration: BoxDecoration(
+                                color: AppColor.primary.withValues(alpha: 0.12),
+                                borderRadius: BorderRadius.circular(14),
                               ),
-                              title: Text(
-                                item.title,
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w600,
-                                ),
+                              child: Icon(
+                                item.type.icon,
+                                color: AppColor.primary,
                               ),
-                              subtitle: Padding(
-                                padding: const EdgeInsets.only(top: 4),
-                                child: Text(
-                                  item.content,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: const TextStyle(color: AppColor.textMuted, fontSize: 13),
-                                ),
-                              ),
-                              trailing: const Icon(Icons.chevron_right_rounded, color: AppColor.textMuted),
-                              onTap: () => _showResourceDetails(item),
                             ),
-                          );
-                        },
-                        childCount: filteredItems.length,
-                      ),
+                            title: Text(
+                              item.title,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            subtitle: Padding(
+                              padding: const EdgeInsets.only(top: 4),
+                              child: Text(
+                                item.content,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  color: AppColor.textMuted,
+                                  fontSize: 13,
+                                ),
+                              ),
+                            ),
+                            trailing: const Icon(
+                              Icons.chevron_right_rounded,
+                              color: AppColor.textMuted,
+                            ),
+                            onTap: () => _showResourceDetails(item),
+                          ),
+                        );
+                      }, childCount: filteredItems.length),
                     ),
                   ),
         ],

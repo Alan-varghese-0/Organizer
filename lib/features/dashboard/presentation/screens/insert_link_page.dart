@@ -2,13 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:organizer/app/theme/app_color.dart';
 import 'package:organizer/core/database/database_service.dart';
+import 'package:organizer/core/models/project.dart';
 import 'package:organizer/core/models/resource.dart';
 import 'package:organizer/features/dashboard/widgets/color_combo_picker.dart';
+import 'package:organizer/features/dashboard/widgets/project_selector.dart';
 import 'package:organizer/features/dashboard/widgets/typography_picker.dart';
 import 'package:uuid/uuid.dart';
 
 class InsertLinkPage extends StatefulWidget {
-  const InsertLinkPage({super.key});
+  final String? initialProjectId;
+
+  const InsertLinkPage({super.key, this.initialProjectId});
 
   @override
   State<InsertLinkPage> createState() => _InsertLinkPageState();
@@ -20,6 +24,15 @@ class _InsertLinkPageState extends State<InsertLinkPage> {
   final TextEditingController _contentController = TextEditingController();
   String _colorHex = '#3B82F6';
   String _fontFamily = 'Inter';
+  late final List<ProjectItem> _existingProjects;
+  String? _selectedProjectId;
+
+  @override
+  void initState() {
+    super.initState();
+    _existingProjects = DatabaseService.instance.getProjects();
+    _selectedProjectId = widget.initialProjectId;
+  }
 
   @override
   void dispose() {
@@ -58,6 +71,9 @@ class _InsertLinkPageState extends State<InsertLinkPage> {
     );
 
     await DatabaseService.instance.saveResource(linkItem);
+    if (_selectedProjectId != null) {
+      await DatabaseService.instance.assignResourceToProject(linkItem, _selectedProjectId!);
+    }
 
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -107,6 +123,12 @@ class _InsertLinkPageState extends State<InsertLinkPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    ProjectSelector(
+                      projects: _existingProjects,
+                      selectedProjectId: _selectedProjectId,
+                      onChanged: (value) => setState(() => _selectedProjectId = value),
+                    ),
+                    const SizedBox(height: 20),
                     const Text(
                       'URL / Web Address',
                       style: TextStyle(color: AppColor.textMuted, fontWeight: FontWeight.w600, fontSize: 13),

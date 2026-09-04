@@ -7,7 +7,9 @@ import 'package:organizer/features/dashboard/widgets/typography_picker.dart';
 import 'package:uuid/uuid.dart';
 
 class InsertTypographyPage extends StatefulWidget {
-  const InsertTypographyPage({super.key});
+  final String? initialProjectId;
+
+  const InsertTypographyPage({super.key, this.initialProjectId});
 
   @override
   State<InsertTypographyPage> createState() => _InsertTypographyPageState();
@@ -31,6 +33,7 @@ class _InsertTypographyPageState extends State<InsertTypographyPage> {
   void initState() {
     super.initState();
     existingProjects = DatabaseService.instance.getProjects();
+    selectedProjectId = widget.initialProjectId;
   }
 
   @override
@@ -62,14 +65,17 @@ class _InsertTypographyPageState extends State<InsertTypographyPage> {
 
     if (title.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter a title for this typography spec.')),
+        const SnackBar(
+          content: Text('Please enter a title for this typography spec.'),
+        ),
       );
       return;
     }
 
     final uniqueId = const Uuid().v4();
     final sampleText = _sampleTextController.text.trim();
-    final content = 'Font: $selectedFontFamily ($selectedFontWeight, ${fontSize.toInt()}px)'
+    final content =
+        'Font: $selectedFontFamily ($selectedFontWeight, ${fontSize.toInt()}px)'
         '${sampleText.isNotEmpty ? '\nSample: $sampleText' : ''}';
 
     final newResource = ResourceItem(
@@ -86,8 +92,12 @@ class _InsertTypographyPageState extends State<InsertTypographyPage> {
     await DatabaseService.instance.saveResource(newResource);
 
     if (selectedProjectId != null) {
-      final targetProj = existingProjects.firstWhere((p) => p.id == selectedProjectId, orElse: () => existingProjects.first);
-      final updatedResources = List<ResourceItem>.from(targetProj.resources)..add(newResource);
+      final targetProj = existingProjects.firstWhere(
+        (p) => p.id == selectedProjectId,
+        orElse: () => existingProjects.first,
+      );
+      final updatedResources = List<ResourceItem>.from(targetProj.resources)
+        ..add(newResource);
       final updatedProj = ProjectItem(
         id: targetProj.id,
         title: targetProj.title,
@@ -135,7 +145,9 @@ class _InsertTypographyPageState extends State<InsertTypographyPage> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColor.primary,
                 foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
             ),
           ),
@@ -149,21 +161,38 @@ class _InsertTypographyPageState extends State<InsertTypographyPage> {
             children: [
               const Text(
                 'Typography Spec Title',
-                style: TextStyle(color: AppColor.textSecondary, fontSize: 13, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  color: AppColor.textSecondary,
+                  fontSize: 13,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               const SizedBox(height: 8),
               TextField(
                 controller: _titleController,
                 onChanged: (_) => setState(() {}),
-                style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w600),
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                ),
                 decoration: InputDecoration(
                   hintText: 'e.g., Primary Heading Font',
                   hintStyle: const TextStyle(color: AppColor.textMuted),
                   filled: true,
                   fillColor: AppColor.surface,
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: AppColor.border)),
-                  enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: AppColor.border)),
-                  focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide(color: AppColor.primary)),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    borderSide: const BorderSide(color: AppColor.border),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    borderSide: const BorderSide(color: AppColor.border),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    borderSide: BorderSide(color: AppColor.primary),
+                  ),
                 ),
               ),
 
@@ -171,7 +200,11 @@ class _InsertTypographyPageState extends State<InsertTypographyPage> {
 
               const Text(
                 'Assign to Project (Optional)',
-                style: TextStyle(color: AppColor.textSecondary, fontSize: 13, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  color: AppColor.textSecondary,
+                  fontSize: 13,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               const SizedBox(height: 8),
               DropdownButtonFormField<String?>(
@@ -181,25 +214,46 @@ class _InsertTypographyPageState extends State<InsertTypographyPage> {
                 decoration: InputDecoration(
                   filled: true,
                   fillColor: AppColor.surface,
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: AppColor.border)),
-                  enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: AppColor.border)),
-                  focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide(color: AppColor.primary)),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    borderSide: const BorderSide(color: AppColor.border),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    borderSide: const BorderSide(color: AppColor.border),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    borderSide: BorderSide(color: AppColor.primary),
+                  ),
                 ),
                 items: [
                   const DropdownMenuItem<String?>(
                     value: null,
-                    child: Text('General Library (Unassigned)', style: TextStyle(color: AppColor.textMuted)),
+                    child: Text(
+                      'General Library (Unassigned)',
+                      style: TextStyle(color: AppColor.textMuted),
+                    ),
                   ),
-                  ...existingProjects.map((p) => DropdownMenuItem<String?>(
-                        value: p.id,
-                        child: Row(
-                          children: [
-                            Icon(Icons.folder_open_rounded, color: p.color, size: 18),
-                            const SizedBox(width: 8),
-                            Text(p.title, style: const TextStyle(color: Colors.white)),
-                          ],
-                        ),
-                      )),
+                  ...existingProjects.map(
+                    (p) => DropdownMenuItem<String?>(
+                      value: p.id,
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.folder_open_rounded,
+                            color: p.color,
+                            size: 18,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            p.title,
+                            style: const TextStyle(color: Colors.white),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
                 ],
                 onChanged: (val) => setState(() => selectedProjectId = val),
               ),
@@ -208,7 +262,11 @@ class _InsertTypographyPageState extends State<InsertTypographyPage> {
 
               const Text(
                 'Font Family (Asset & Google Fonts)',
-                style: TextStyle(color: AppColor.textSecondary, fontSize: 13, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  color: AppColor.textSecondary,
+                  fontSize: 13,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               const SizedBox(height: 8),
               TypographyPicker(
@@ -224,7 +282,11 @@ class _InsertTypographyPageState extends State<InsertTypographyPage> {
 
               const Text(
                 'Font Weight',
-                style: TextStyle(color: AppColor.textSecondary, fontSize: 13, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  color: AppColor.textSecondary,
+                  fontSize: 13,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               const SizedBox(height: 8),
               Wrap(
@@ -252,11 +314,19 @@ class _InsertTypographyPageState extends State<InsertTypographyPage> {
                 children: [
                   const Text(
                     'Font Size',
-                    style: TextStyle(color: AppColor.textSecondary, fontSize: 13, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                      color: AppColor.textSecondary,
+                      fontSize: 13,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   Text(
                     '${fontSize.toInt()} px',
-                    style: TextStyle(color: AppColor.primarySoft, fontSize: 14, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                      color: AppColor.primarySoft,
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ],
               ),
@@ -274,7 +344,11 @@ class _InsertTypographyPageState extends State<InsertTypographyPage> {
 
               const Text(
                 'Sample Text Preview',
-                style: TextStyle(color: AppColor.textSecondary, fontSize: 13, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  color: AppColor.textSecondary,
+                  fontSize: 13,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               const SizedBox(height: 8),
               TextField(
@@ -286,9 +360,18 @@ class _InsertTypographyPageState extends State<InsertTypographyPage> {
                   hintStyle: const TextStyle(color: AppColor.textMuted),
                   filled: true,
                   fillColor: AppColor.surface,
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: AppColor.border)),
-                  enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: AppColor.border)),
-                  focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide(color: AppColor.primary)),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    borderSide: const BorderSide(color: AppColor.border),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    borderSide: const BorderSide(color: AppColor.border),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    borderSide: BorderSide(color: AppColor.primary),
+                  ),
                 ),
               ),
 
@@ -296,7 +379,11 @@ class _InsertTypographyPageState extends State<InsertTypographyPage> {
 
               const Text(
                 'Typography Spec Card',
-                style: TextStyle(color: AppColor.textSecondary, fontSize: 13, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  color: AppColor.textSecondary,
+                  fontSize: 13,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               const SizedBox(height: 10),
 
@@ -308,7 +395,11 @@ class _InsertTypographyPageState extends State<InsertTypographyPage> {
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(color: AppColor.border),
                   boxShadow: const [
-                    BoxShadow(color: Colors.black26, blurRadius: 16, offset: Offset(0, 4)),
+                    BoxShadow(
+                      color: Colors.black26,
+                      blurRadius: 16,
+                      offset: Offset(0, 4),
+                    ),
                   ],
                 ),
                 child: Column(
@@ -319,10 +410,17 @@ class _InsertTypographyPageState extends State<InsertTypographyPage> {
                       children: [
                         Text(
                           selectedFontFamily,
-                          style: TextStyle(color: AppColor.primarySoft, fontSize: 13, fontWeight: FontWeight.bold),
+                          style: TextStyle(
+                            color: AppColor.primarySoft,
+                            fontSize: 13,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 4,
+                          ),
                           decoration: BoxDecoration(
                             color: AppColor.surfaceAlt,
                             borderRadius: BorderRadius.circular(8),
@@ -330,7 +428,11 @@ class _InsertTypographyPageState extends State<InsertTypographyPage> {
                           ),
                           child: Text(
                             '$selectedFontWeight • ${fontSize.toInt()}px',
-                            style: const TextStyle(color: Colors.white70, fontSize: 11, fontWeight: FontWeight.w600),
+                            style: const TextStyle(
+                              color: Colors.white70,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
                         ),
                       ],
